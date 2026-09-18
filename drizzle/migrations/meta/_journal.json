@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789048724525,
+      "tag": "0000_crm_core_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789237954535,
+      "tag": "0001_auth_roles_invites",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789237977877,
+      "tag": "0002_job_photos_storage_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789375657020,
+      "tag": "0003_private_role_helpers_and_invite_policies",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789548126447,
+      "tag": "0004_create_job_items",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789640708690,
+      "tag": "0005_add_to_quote_status",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,367 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-navy-deep: var(--navy-deep);
+  --color-panel: var(--panel);
+  --color-status-blue: var(--status-blue);
+  --color-status-green: var(--status-green);
+  --color-status-amber: var(--status-amber);
+  --color-status-violet: var(--status-violet);
+  --color-status-red: var(--status-red);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Manrope", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* Brand palette — exact */
+  --azure-dark: oklch(0.261 0.0437 238.6); /* #0D2737 */
+  --azure-mid: oklch(0.2925 0.0516 240.2); /* #102F43 */
+  --azure-soft: oklch(0.3513 0.065 239.2); /* #143F59 */
+  --soft-white: oklch(0.9755 0.0045 258.3); /* #F5F7FA */
+  --light-grey: oklch(0.8024 0.0158 241.8); /* #B6C0C8 */
+  --gold: oklch(0.8117 0.0781 84.6); /* champagne gold from logo */
+  --gold-soft: oklch(0.8795 0.0555 87);
+  --gold-deep: oklch(0.7479 0.0986 86.1);
+
+  --background: var(--azure-dark);
+  --foreground: var(--soft-white);
+  --card: var(--azure-mid);
+  --card-foreground: var(--soft-white);
+  --popover: var(--azure-mid);
+  --popover-foreground: var(--soft-white);
+  --primary: var(--gold);
+  --primary-foreground: var(--azure-dark);
+  --secondary: var(--azure-soft);
+  --secondary-foreground: var(--soft-white);
+  --muted: var(--azure-mid);
+  --muted-foreground: var(--light-grey);
+  --accent: var(--azure-soft);
+  --accent-foreground: var(--soft-white);
+  --destructive: oklch(0.6 0.19 22);
+  --destructive-foreground: var(--soft-white);
+
+  /* Borders are a last resort: extremely thin, very low opacity */
+  --border: oklch(0.9755 0.0045 258.3 / 8%);
+  --input: oklch(0.9755 0.0045 258.3 / 10%);
+  --ring: oklch(0.8117 0.0781 84.6 / 45%);
+
+  --navy-deep: var(--azure-dark);
+  --panel: oklch(0.3513 0.065 239.2 / 38%);
+  --status-blue: oklch(0.68 0.12 240);
+  --status-green: oklch(0.75 0.12 168);
+  --status-amber: oklch(0.82 0.1 84);
+  --status-violet: oklch(0.68 0.12 295);
+  --status-red: oklch(0.66 0.16 24);
+
+  --sidebar: oklch(0.261 0.0437 238.6 / 72%);
+  --sidebar-foreground: var(--soft-white);
+  --sidebar-primary: var(--gold);
+  --sidebar-primary-foreground: var(--azure-dark);
+  --sidebar-accent: var(--azure-soft);
+  --sidebar-accent-foreground: var(--soft-white);
+  --sidebar-border: oklch(0.9755 0.0045 258.3 / 7%);
+  --sidebar-ring: oklch(0.8117 0.0781 84.6 / 45%);
+
+  /* Shared glass material */
+  --glass-blur: blur(22px) saturate(115%);
+  --glass-tint: linear-gradient(
+    155deg,
+    oklch(0.3513 0.065 239.2 / 0.5),
+    oklch(0.2925 0.0516 240.2 / 0.38)
+  );
+  --glass-shadow:
+    0 24px 60px -30px oklch(0.12 0.03 240 / 0.85),
+    0 2px 10px -6px oklch(0.12 0.03 240 / 0.6);
+  --glass-inner: inset 0 1px 0 oklch(1 0 0 / 0.06),
+    inset 0 -1px 0 oklch(0.12 0.03 240 / 0.25);
+  --glass-edge: 1px solid oklch(0.9755 0.0045 258.3 / 0.07);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01";
+    letter-spacing: 0.005em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: 0.005em;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-family: inherit;
+  }
+}
+
+/* Page background: restrained light, behind the glass */
+@utility app-bg {
+  background:
+    radial-gradient(
+      900px 620px at 8% 92%,
+      oklch(0.8117 0.0781 84.6 / 0.07),
+      transparent 62%
+    ),
+    radial-gradient(
+      1100px 760px at 100% 0%,
+      oklch(0.3513 0.065 239.2 / 0.55),
+      transparent 60%
+    ),
+    linear-gradient(
+      168deg,
+      oklch(0.2925 0.0516 240.2),
+      oklch(0.261 0.0437 238.6) 55%,
+      oklch(0.245 0.041 238) 100%
+    );
+}
+
+/* The one reusable floating-glass material */
+@utility glass {
+  background: var(--glass-tint);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-edge);
+  box-shadow: var(--glass-shadow), var(--glass-inner);
+}
+
+/* Same material, gold-accented edge — for active/primary surfaces only */
+@utility glass-gold {
+  background: linear-gradient(
+    155deg,
+    oklch(0.3513 0.065 239.2 / 0.58),
+    oklch(0.2925 0.0516 240.2 / 0.42)
+  );
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid oklch(0.8117 0.0781 84.6 / 0.28);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 oklch(0.8117 0.0781 84.6 / 0.14);
+}
+
+/* Borderless floating tile — depth without a frame */
+@utility glass-tile {
+  background: linear-gradient(
+    160deg,
+    oklch(0.3513 0.065 239.2 / 0.38),
+    oklch(0.2925 0.0516 240.2 / 0.28)
+  );
+  backdrop-filter: blur(18px) saturate(112%);
+  border: none;
+  box-shadow:
+    0 18px 44px -26px oklch(0.12 0.03 240 / 0.8),
+    inset 0 1px 0 oklch(1 0 0 / 0.05);
+}
+
+/* Subtle recessed surface, e.g. inputs and inner wells */
+@utility glass-inset {
+  background: oklch(0.245 0.041 238 / 0.55);
+  border: 1px solid oklch(0.9755 0.0045 258.3 / 0.07);
+  box-shadow: inset 0 1px 2px oklch(0.12 0.03 240 / 0.45);
+}
+
+@utility field {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: var(--radius);
+  padding-inline: 1rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  background: oklch(0.245 0.041 238 / 0.55);
+  border: 1px solid oklch(0.9755 0.0045 258.3 / 0.07);
+  box-shadow: inset 0 1px 2px oklch(0.12 0.03 240 / 0.4);
+  outline: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+
+  &::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  &:focus {
+    border-color: oklch(0.8117 0.0781 84.6 / 0.4);
+    box-shadow:
+      inset 0 1px 2px oklch(0.12 0.03 240 / 0.4),
+      0 0 0 3px oklch(0.8117 0.0781 84.6 / 0.12);
+  }
+}
+
+@utility btn-glass {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.75rem;
+  padding-inline: 1.1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  background: var(--glass-tint);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-edge);
+  box-shadow: var(--glass-shadow), var(--glass-inner);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@utility btn-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.75rem;
+  padding-inline: 1.1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gold-soft);
+  background: linear-gradient(
+    155deg,
+    oklch(0.3513 0.065 239.2 / 0.6),
+    oklch(0.2925 0.0516 240.2 / 0.45)
+  );
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid oklch(0.8117 0.0781 84.6 / 0.3);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 oklch(0.8117 0.0781 84.6 / 0.16);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      var(--glass-shadow),
+      inset 0 1px 0 oklch(0.8117 0.0781 84.6 / 0.24);
+  }
+}
+
+@utility badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: oklch(0.9755 0.0045 258.3 / 0.06);
+  color: var(--foreground);
+  border: none;
+}
+
+@utility gold-text {
+  background: linear-gradient(
+    100deg,
+    oklch(0.8795 0.0555 87),
+    oklch(0.7479 0.0986 86.1)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Metadata / small caps label */
+@utility meta-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Display figure — Cormorant for important numbers */
+@utility display-figure {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+@utility hairline {
+  border-bottom: 1px solid oklch(0.9755 0.0045 258.3 / 0.06);
+}
+
+@utility jewel-thumb {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1px oklch(0.8117 0.0781 84.6 / 0.18);
+
+  & img {
+    width: 300%;
+    height: 200%;
+    max-width: none;
+    object-fit: fill;
+    position: absolute;
+  }
+}
+
+@utility jewel-diamond { & img { left: 0; top: 0; } }
+@utility jewel-emerald { & img { left: -100%; top: 0; } }
+@utility jewel-chain { & img { left: -200%; top: 0; } }
+@utility jewel-watch { & img { left: 0; top: -100%; } }
+@utility jewel-bracelet { & img { left: -100%; top: -100%; } }
+@utility jewel-pendant { & img { left: -200%; top: -100%; } }

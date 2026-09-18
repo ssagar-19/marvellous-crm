@@ -1,0 +1,276 @@
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { GlobalSearch } from "@/components/global-search";
+import { supabase } from "@/integrations/supabase/client";
+import { roleLabels } from "@/lib/auth.functions";
+import { myAccessQuery } from "@/lib/auth-queries";
+
+import {
+  Home,
+  ClipboardList,
+  PlusCircle,
+  Wrench,
+  BarChart3,
+  MessageSquare,
+  Mail,
+  Settings as SettingsIcon,
+  LogOut,
+  AlertTriangle,
+  Loader2,
+  type LucideIcon,
+} from "lucide-react";
+import type { ReactNode } from "react";
+
+const nav: { label: string; to: string; icon: LucideIcon; badge?: number }[] = [
+  { label: "Home", to: "/", icon: Home },
+  { label: "New Job", to: "/new-job", icon: PlusCircle },
+  { label: "Jobs", to: "/jobs", icon: ClipboardList },
+  { label: "Workshop", to: "/workshop", icon: Wrench },
+  { label: "Reports", to: "/reports", icon: BarChart3 },
+  { label: "Enquiries", to: "/enquiries", icon: Mail, badge: 2 },
+  { label: "Settings", to: "/settings", icon: SettingsIcon },
+];
+
+export function Logo() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="relative grid size-11 place-items-center">
+        <svg viewBox="0 0 100 100" className="absolute inset-0 size-full">
+          <polygon
+            points="50,4 92,27 92,73 50,96 8,73 8,27"
+            fill="none"
+            stroke="var(--gold)"
+            strokeWidth="4"
+          />
+        </svg>
+        <span className="font-display text-xl font-semibold text-gold">M</span>
+      </div>
+      <div className="leading-tight">
+        <div className="font-display text-lg tracking-[0.18em] text-foreground">
+          MARVELLOUS
+        </div>
+        <div className="text-[0.6rem] tracking-[0.42em] text-muted-foreground">
+          JEWELLERS
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Sidebar() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  return (
+    <aside className="hidden w-64 shrink-0 flex-col justify-between bg-[var(--sidebar)] px-4 py-6 shadow-[1px_0_0_0_oklch(0.9755_0.0045_258.3/0.05)] backdrop-blur-2xl lg:flex">
+      <div>
+        <div className="px-2">
+          <Logo />
+        </div>
+        <nav className="mt-8 space-y-1">
+          {nav.map((item) => {
+            const active =
+              item.to === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={
+                  "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors " +
+                  (active
+                    ? "glass-gold text-foreground"
+                    : "text-muted-foreground hover:bg-accent/40 hover:text-foreground")
+                }
+              >
+                <item.icon
+                  className={
+                    "size-[18px] " + (active ? "text-gold" : "text-gold/70")
+                  }
+                />
+                <span>{item.label}</span>
+                {item.badge ? (
+                  <span className="ml-auto grid size-5 place-items-center rounded-full bg-[var(--status-green)] text-[0.65rem] font-semibold text-[var(--navy-deep)]">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
+
+      <SidebarAccount />
+    </aside>
+  );
+}
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function SidebarAccount() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data, isPending } = useQuery(myAccessQuery);
+
+  async function handleSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
+  const name = data?.fullName || data?.email || (isPending ? "Loading…" : "Signed in");
+  const role = data?.roles?.[0] ? roleLabels[data.roles[0]] : "Staff";
+
+  return (
+    <div className="glass-tile rounded-2xl p-3">
+      <div className="flex items-center gap-3">
+        <div className="grid size-9 place-items-center rounded-full border border-gold/30 text-xs font-semibold text-gold">
+          {data ? initials(data.fullName || data.email || "MJ") : "MJ"}
+        </div>
+        <div className="min-w-0 leading-tight">
+          <div className="truncate text-sm">{name}</div>
+          <div className="text-xs text-muted-foreground">{role}</div>
+        </div>
+      </div>
+      <button
+        onClick={handleSignOut}
+        className="mt-3 flex w-full items-center gap-3 rounded-lg px-1 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <LogOut className="size-[18px] text-gold/80" />
+        Log out
+      </button>
+    </div>
+  );
+}
+
+
+function TopBar() {
+  return (
+    <header className="flex items-center gap-4 px-4 pt-5 lg:px-8">
+      <GlobalSearch />
+
+      <button className="glass-gold relative grid size-12 shrink-0 place-items-center rounded-2xl">
+        <MessageSquare className="size-5 text-gold" />
+        <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-[var(--status-green)] text-[0.65rem] font-semibold text-[var(--navy-deep)]">
+          2
+        </span>
+      </button>
+
+      <div className="hidden text-right leading-tight sm:block">
+        <div className="meta-label">Mon 8 Sep 2025</div>
+        <div className="display-figure mt-1 text-2xl text-foreground">9:41 AM</div>
+      </div>
+    </header>
+  );
+}
+
+export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="app-bg flex min-h-screen w-full">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar />
+        <main className="flex-1 px-4 pb-10 pt-6 lg:px-8">{children}</main>
+        <footer className="hairline-none px-8 pb-5 text-right text-xs text-muted-foreground">
+          Marvellous Jewellers &nbsp;|&nbsp; CRM System &nbsp;|&nbsp; v1.0.0
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+export function PageHeader({
+  title,
+  subtitle,
+  icon: Icon,
+  actions,
+}: {
+  title: string;
+  subtitle?: string;
+  icon?: LucideIcon;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="flex items-center gap-4">
+        {Icon ? <Icon className="size-8 text-gold" strokeWidth={1.5} /> : null}
+        <div>
+          <h1 className="font-display text-4xl font-medium leading-none tracking-[0.01em] text-foreground">
+            {title}
+          </h1>
+          {subtitle ? (
+            <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+          ) : null}
+        </div>
+      </div>
+      {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
+    </div>
+  );
+}
+
+export function ToolButton({
+  children,
+  primary,
+  onClick,
+  type = "button",
+  disabled,
+}: {
+  children: ReactNode;
+  primary?: boolean;
+  onClick?: () => void;
+  type?: "button" | "submit";
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={(primary ? "btn-gold" : "btn-glass") + (disabled ? " opacity-60" : "")}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function PanelLoading({ label = "Loading\u2026" }: { label?: string }) {
+  return (
+    <div className="glass flex items-center gap-3 rounded-2xl p-6 text-sm text-muted-foreground">
+      <Loader2 className="size-4 animate-spin text-gold" /> {label}
+    </div>
+  );
+}
+
+export function PanelEmpty({ label }: { label: string }) {
+  return (
+    <div className="glass rounded-2xl p-6 text-sm text-muted-foreground">{label}</div>
+  );
+}
+
+export function PanelError({
+  title = "Something went wrong",
+  message,
+}: {
+  title?: string;
+  message?: string;
+}) {
+  return (
+    <div className="glass rounded-2xl p-6" role="alert">
+      <div className="flex items-center gap-3">
+        <AlertTriangle className="size-5 text-destructive" />
+        <h2 className="font-display text-xl">{title}</h2>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        {message || "Please try again in a moment."}
+      </p>
+    </div>
+  );
+}
