@@ -424,7 +424,7 @@ export function buildInvoicePdf(
 
   y += 4;
 
-  const vat = Math.round(subtotal * invoice.vatRate * 100) / 100;
+  const vat = Math.round(subtotal * (invoice.vatRate / 100) * 100) / 100;
   const total = Math.round((subtotal + vat) * 100) / 100;
   const amountDue = Math.max(0, total - invoice.depositPaid);
 
@@ -442,7 +442,7 @@ export function buildInvoicePdf(
 
   y += 6;
 
-  text(doc, `VAT (${Math.round(invoice.vatRate * 100)}%)`, PAGE_W - 70, y, {
+  text(doc, `VAT (${Math.round(invoice.vatRate)}%)`, PAGE_W - 70, y, {
     size: 9,
     color: GREY,
   });

@@ -51,9 +51,10 @@ function InvoicePage() {
     },
   ]);
 
-  const [vatRate, setVatRate] = useState(0);
+  const [vatRate, setVatRate] = useState(20);
+  const [vatOpen, setVatOpen] = useState(false);
 
-  const [depositPaid, setDepositPaid] = useState(
+  const [depositPaid, setDepositPaid] = useState<number | "">(
     job.depositAmount ?? 0,
   );
 
@@ -80,7 +81,7 @@ function InvoicePage() {
 
   const vatAmount = subtotal * (vatRate / 100);
   const total = subtotal + vatAmount;
-  const amountDue = Math.max(total - depositPaid, 0);
+  const amountDue = Math.max(total - (depositPaid === "" ? 0 : depositPaid), 0);
 
   const updateLineItem = (
     id: number,
@@ -585,12 +586,12 @@ function InvoicePage() {
               </h2>
             </div>
 
-            <div className="space-y-3 text-sm">
+            <div className="space-y-4 text-base">
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">
                   Subtotal
                 </span>
-                <span>{money(subtotal)}</span>
+                <span className="text-base">{money(subtotal)}</span>
               </div>
 
               <div className="flex items-center justify-between gap-4">
@@ -598,19 +599,48 @@ function InvoicePage() {
                   VAT
                 </span>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={vatRate}
-                    onChange={(e) =>
-                      setVatRate(Number(e.target.value) || 0)
-                    }
-                    className="w-16 rounded-lg border border-white/10 bg-black/10 px-2 py-1.5 text-right text-sm outline-none focus:border-gold/50"
-                  />
-                  <span className="text-muted-foreground">%</span>
+                <div className="relative w-28">
+                  <button
+                    type="button"
+                    onClick={() => setVatOpen((open) => !open)}
+                    className="flex w-full items-center justify-between rounded-xl border border-gold/50 bg-black/10 px-4 py-3 text-base outline-none transition-colors hover:border-gold focus:border-gold"
+                  >
+                    <span>{vatRate}%</span>
+                    <span
+                      className={
+                        "text-gold transition-transform duration-200 " +
+                        (vatOpen ? "rotate-180" : "")
+                      }
+                    >
+                      ▾
+                    </span>
+                  </button>
+
+                  {vatOpen ? (
+                    <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-gold/40 bg-[var(--sidebar)] p-1 shadow-xl backdrop-blur-xl">
+                      {[20, 0].map((rate) => (
+                        <button
+                          key={rate}
+                          type="button"
+                          onClick={() => {
+                            setVatRate(rate);
+                            setVatOpen(false);
+                          }}
+                          className={
+                            "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors " +
+                            (vatRate === rate
+                              ? "bg-gold/15 text-gold"
+                              : "text-foreground hover:bg-white/5")
+                          }
+                        >
+                          <span>{rate}%</span>
+                          {vatRate === rate ? (
+                            <span className="text-gold">✓</span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -618,14 +648,14 @@ function InvoicePage() {
                 <span className="text-muted-foreground">
                   VAT amount
                 </span>
-                <span>{money(vatAmount)}</span>
+                <span className="text-base">{money(vatAmount)}</span>
               </div>
 
               <div className="my-4 border-t border-white/10" />
 
-              <div className="flex justify-between gap-4 text-base">
+              <div className="flex justify-between gap-4 text-lg">
                 <span>Total</span>
-                <span className="font-medium">
+                <span className="text-lg font-medium">
                   {money(total)}
                 </span>
               </div>
@@ -640,10 +670,11 @@ function InvoicePage() {
                   min="0"
                   step="0.01"
                   value={depositPaid}
-                  onChange={(e) =>
-                    setDepositPaid(Number(e.target.value) || 0)
-                  }
-                  className="w-28 rounded-lg border border-white/10 bg-black/10 px-3 py-1.5 text-right text-sm outline-none focus:border-gold/50"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setDepositPaid(value === "" ? "" : Number(value));
+                  }}
+                  className="w-28 appearance-none rounded-xl border border-gold/50 bg-transparent px-3 py-3 text-right text-base outline-none transition-colors focus:border-gold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
               </div>
 

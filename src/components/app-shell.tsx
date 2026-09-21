@@ -12,7 +12,6 @@ import {
   PlusCircle,
   Wrench,
   BarChart3,
-  MessageSquare,
   Mail,
   Settings as SettingsIcon,
   LogOut,
@@ -20,7 +19,7 @@ import {
   Loader2,
   type LucideIcon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 const nav: { label: string; to: string; icon: LucideIcon; badge?: number }[] = [
   { label: "Home", to: "/", icon: Home },
@@ -46,12 +45,36 @@ export function Logo() {
 
 function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <aside className="hidden w-20 shrink-0 flex-col justify-between bg-[var(--sidebar)] px-3 py-6 shadow-[1px_0_0_0_oklch(0.9755_0.0045_258.3/0.05)] backdrop-blur-2xl lg:flex">
+    <aside
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
+      className={
+        "hidden shrink-0 flex-col justify-between bg-[var(--sidebar)] px-3 py-6 shadow-[1px_0_0_0_oklch(0.9755_0.0045_258.3/0.05)] backdrop-blur-2xl transition-[width] duration-300 ease-out lg:flex " +
+        (expanded ? "w-64" : "w-20")
+      }
+    >
       <div>
-        <div className="flex justify-center">
+        <div
+          className={
+            "flex items-center transition-all duration-300 " +
+            (expanded ? "justify-start gap-3 px-1" : "justify-center")
+          }
+        >
           <Logo />
+
+          <span
+            className={
+              "whitespace-nowrap text-sm font-medium tracking-[0.28em] text-gold transition-all duration-300 " +
+              (expanded
+                ? "translate-x-0 opacity-100"
+                : "pointer-events-none absolute -translate-x-2 opacity-0")
+            }
+          >
+            MARVELLOUS
+          </span>
         </div>
 
         <nav className="mt-8 space-y-2">
@@ -68,17 +91,32 @@ function Sidebar() {
                 title={item.label}
                 aria-label={item.label}
                 className={
-                  "relative flex items-center justify-center rounded-xl p-3 transition-colors " +
+                  "relative flex w-full items-center rounded-xl p-3 transition-all duration-300 " +
+                  (expanded ? "justify-start gap-4" : "justify-center") +
+                  " " +
                   (active
                     ? "glass-gold text-foreground"
                     : "text-muted-foreground hover:bg-accent/40 hover:text-foreground")
                 }
               >
-                <item.icon
+                <span className="flex w-8 shrink-0 items-center justify-center">
+                  <item.icon
+                    className={
+                      "size-5 " + (active ? "text-gold" : "text-gold/70")
+                    }
+                  />
+                </span>
+
+                <span
                   className={
-                    "size-5 " + (active ? "text-gold" : "text-gold/70")
+                    "whitespace-nowrap text-sm font-medium transition-all duration-200 overflow-hidden " +
+                    (expanded
+                      ? "max-w-[160px] translate-x-0 opacity-100"
+                      : "max-w-0 pointer-events-none -translate-x-2 opacity-0")
                   }
-                />
+                >
+                  {item.label}
+                </span>
 
                 {item.badge ? (
                   <span className="absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-[var(--status-green)] text-[0.65rem] font-semibold text-[var(--navy-deep)]">
@@ -142,21 +180,41 @@ function SidebarAccount() {
 }
 
 function TopBar() {
+  const [time, setTime] = useState(() =>
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(new Date())
+  );
+
+  useEffect(() => {
+    const updateTime = () => {
+      setTime(
+        new Intl.DateTimeFormat("en-GB", {
+          timeZone: "Europe/London",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }).format(new Date())
+      );
+    };
+
+    const interval = window.setInterval(updateTime, 30000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
     <header className="flex items-center gap-4 px-4 pt-5 lg:px-8">
       <GlobalSearch />
 
-      <button className="glass-gold relative grid size-12 shrink-0 place-items-center rounded-2xl">
-        <MessageSquare className="size-5 text-gold" />
-        <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-[var(--status-green)] text-[0.65rem] font-semibold text-[var(--navy-deep)]">
-          2
-        </span>
-      </button>
-
-      <div className="hidden text-right leading-tight sm:block">
-        <div className="meta-label">Mon 8 Sep 2025</div>
-        <div className="display-figure mt-1 text-2xl text-foreground">
-          9:41 AM
+      <div className="ml-auto hidden items-center sm:flex">
+        <div className="display-figure flex items-baseline gap-2 text-4xl tracking-wide text-foreground">
+          <span>{time.split(" ")[0]}</span>
+          <span className="text-xl tracking-widest text-gold/90">
+            {time.split(" ")[1]?.toUpperCase()}
+          </span>
         </div>
       </div>
     </header>
