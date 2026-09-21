@@ -15,12 +15,16 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedEnquiriesRouteImport } from './routes/_authenticated/enquiries'
 import { Route as AuthenticatedNewJobRouteImport } from './routes/_authenticated/new-job'
+import { Route as AuthenticatedNewRepairRouteImport } from './routes/_authenticated/new-repair'
 import { Route as AuthenticatedOutlookRouteImport } from './routes/_authenticated/outlook'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedWorkshopRouteImport } from './routes/_authenticated/workshop'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients/$id'
+import { Route as AuthenticatedEnquiriesIndexRouteImport } from './routes/_authenticated/enquiries/index'
+import { Route as AuthenticatedEnquiriesIdRouteImport } from './routes/_authenticated/enquiries/$id'
+import { Route as AuthenticatedInvoicesIdRouteImport } from './routes/_authenticated/invoices/$id'
 import { Route as AuthenticatedJobsIndexRouteImport } from './routes/_authenticated/jobs/index'
 import { Route as AuthenticatedJobsRefRouteImport } from './routes/_authenticated/jobs/$ref'
 
@@ -51,6 +55,11 @@ const AuthenticatedEnquiriesRoute = AuthenticatedEnquiriesRouteImport.update({
 const AuthenticatedNewJobRoute = AuthenticatedNewJobRouteImport.update({
   id: '/new-job',
   path: '/new-job',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNewRepairRoute = AuthenticatedNewRepairRouteImport.update({
+  id: '/new-repair',
+  path: '/new-repair',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOutlookRoute = AuthenticatedOutlookRouteImport.update({
@@ -84,6 +93,23 @@ const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
   path: '/clients/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEnquiriesIndexRoute =
+  AuthenticatedEnquiriesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedEnquiriesRoute,
+  } as any)
+const AuthenticatedEnquiriesIdRoute =
+  AuthenticatedEnquiriesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedEnquiriesRoute,
+  } as any)
+const AuthenticatedInvoicesIdRoute = AuthenticatedInvoicesIdRouteImport.update({
+  id: '/invoices/$id',
+  path: '/invoices/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedJobsIndexRoute = AuthenticatedJobsIndexRouteImport.update({
   id: '/jobs/',
   path: '/jobs/',
@@ -99,30 +125,37 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/enquiries': typeof AuthenticatedEnquiriesRoute
+  '/enquiries': typeof AuthenticatedEnquiriesRouteWithChildren
   '/new-job': typeof AuthenticatedNewJobRoute
+  '/new-repair': typeof AuthenticatedNewRepairRoute
   '/outlook': typeof AuthenticatedOutlookRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/workshop': typeof AuthenticatedWorkshopRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
+  '/enquiries/$id': typeof AuthenticatedEnquiriesIdRoute
+  '/invoices/$id': typeof AuthenticatedInvoicesIdRoute
   '/jobs/$ref': typeof AuthenticatedJobsRefRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
+  '/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/enquiries': typeof AuthenticatedEnquiriesRoute
   '/new-job': typeof AuthenticatedNewJobRoute
+  '/new-repair': typeof AuthenticatedNewRepairRoute
   '/outlook': typeof AuthenticatedOutlookRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/workshop': typeof AuthenticatedWorkshopRoute
   '/': typeof AuthenticatedIndexRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
+  '/enquiries/$id': typeof AuthenticatedEnquiriesIdRoute
+  '/invoices/$id': typeof AuthenticatedInvoicesIdRoute
   '/jobs/$ref': typeof AuthenticatedJobsRefRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
+  '/enquiries': typeof AuthenticatedEnquiriesIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
 }
 export interface FileRoutesById {
@@ -130,16 +163,20 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/enquiries': typeof AuthenticatedEnquiriesRoute
+  '/_authenticated/enquiries': typeof AuthenticatedEnquiriesRouteWithChildren
   '/_authenticated/new-job': typeof AuthenticatedNewJobRoute
+  '/_authenticated/new-repair': typeof AuthenticatedNewRepairRoute
   '/_authenticated/outlook': typeof AuthenticatedOutlookRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/workshop': typeof AuthenticatedWorkshopRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
+  '/_authenticated/enquiries/$id': typeof AuthenticatedEnquiriesIdRoute
+  '/_authenticated/invoices/$id': typeof AuthenticatedInvoicesIdRoute
   '/_authenticated/jobs/$ref': typeof AuthenticatedJobsRefRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
+  '/_authenticated/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
 }
 export interface FileRouteTypes {
@@ -150,28 +187,35 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/enquiries'
     | '/new-job'
+    | '/new-repair'
     | '/outlook'
     | '/reports'
     | '/settings'
     | '/workshop'
     | '/clients/$id'
+    | '/enquiries/$id'
+    | '/invoices/$id'
     | '/jobs/$ref'
     | '/clients/'
+    | '/enquiries/'
     | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
     | '/reset-password'
-    | '/enquiries'
     | '/new-job'
+    | '/new-repair'
     | '/outlook'
     | '/reports'
     | '/settings'
     | '/workshop'
     | '/'
     | '/clients/$id'
+    | '/enquiries/$id'
+    | '/invoices/$id'
     | '/jobs/$ref'
     | '/clients'
+    | '/enquiries'
     | '/jobs'
   id:
     | '__root__'
@@ -180,14 +224,18 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/enquiries'
     | '/_authenticated/new-job'
+    | '/_authenticated/new-repair'
     | '/_authenticated/outlook'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/workshop'
     | '/_authenticated/'
     | '/_authenticated/clients/$id'
+    | '/_authenticated/enquiries/$id'
+    | '/_authenticated/invoices/$id'
     | '/_authenticated/jobs/$ref'
     | '/_authenticated/clients/'
+    | '/_authenticated/enquiries/'
     | '/_authenticated/jobs/'
   fileRoutesById: FileRoutesById
 }
@@ -241,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNewJobRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/new-repair': {
+      id: '/_authenticated/new-repair'
+      path: '/new-repair'
+      fullPath: '/new-repair'
+      preLoaderRoute: typeof AuthenticatedNewRepairRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/outlook': {
       id: '/_authenticated/outlook'
       path: '/outlook'
@@ -283,6 +338,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/enquiries/': {
+      id: '/_authenticated/enquiries/'
+      path: '/'
+      fullPath: '/enquiries/'
+      preLoaderRoute: typeof AuthenticatedEnquiriesIndexRouteImport
+      parentRoute: typeof AuthenticatedEnquiriesRoute
+    }
+    '/_authenticated/enquiries/$id': {
+      id: '/_authenticated/enquiries/$id'
+      path: '/$id'
+      fullPath: '/enquiries/$id'
+      preLoaderRoute: typeof AuthenticatedEnquiriesIdRouteImport
+      parentRoute: typeof AuthenticatedEnquiriesRoute
+    }
+    '/_authenticated/invoices/$id': {
+      id: '/_authenticated/invoices/$id'
+      path: '/invoices/$id'
+      fullPath: '/invoices/$id'
+      preLoaderRoute: typeof AuthenticatedInvoicesIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/jobs/': {
       id: '/_authenticated/jobs/'
       path: '/jobs'
@@ -300,29 +376,49 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedEnquiriesRouteChildren {
+  AuthenticatedEnquiriesIdRoute: typeof AuthenticatedEnquiriesIdRoute
+  AuthenticatedEnquiriesIndexRoute: typeof AuthenticatedEnquiriesIndexRoute
+}
+
+const AuthenticatedEnquiriesRouteChildren: AuthenticatedEnquiriesRouteChildren =
+  {
+    AuthenticatedEnquiriesIdRoute: AuthenticatedEnquiriesIdRoute,
+    AuthenticatedEnquiriesIndexRoute: AuthenticatedEnquiriesIndexRoute,
+  }
+
+const AuthenticatedEnquiriesRouteWithChildren =
+  AuthenticatedEnquiriesRoute._addFileChildren(
+    AuthenticatedEnquiriesRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedEnquiriesRoute: typeof AuthenticatedEnquiriesRoute
+  AuthenticatedEnquiriesRoute: typeof AuthenticatedEnquiriesRouteWithChildren
   AuthenticatedNewJobRoute: typeof AuthenticatedNewJobRoute
+  AuthenticatedNewRepairRoute: typeof AuthenticatedNewRepairRoute
   AuthenticatedOutlookRoute: typeof AuthenticatedOutlookRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWorkshopRoute: typeof AuthenticatedWorkshopRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedClientsIdRoute: typeof AuthenticatedClientsIdRoute
+  AuthenticatedInvoicesIdRoute: typeof AuthenticatedInvoicesIdRoute
   AuthenticatedJobsRefRoute: typeof AuthenticatedJobsRefRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedEnquiriesRoute: AuthenticatedEnquiriesRoute,
+  AuthenticatedEnquiriesRoute: AuthenticatedEnquiriesRouteWithChildren,
   AuthenticatedNewJobRoute: AuthenticatedNewJobRoute,
+  AuthenticatedNewRepairRoute: AuthenticatedNewRepairRoute,
   AuthenticatedOutlookRoute: AuthenticatedOutlookRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWorkshopRoute: AuthenticatedWorkshopRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedClientsIdRoute: AuthenticatedClientsIdRoute,
+  AuthenticatedInvoicesIdRoute: AuthenticatedInvoicesIdRoute,
   AuthenticatedJobsRefRoute: AuthenticatedJobsRefRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,

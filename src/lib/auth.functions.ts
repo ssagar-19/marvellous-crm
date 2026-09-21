@@ -38,7 +38,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
     const code = data.inviteCode.trim().toUpperCase();
 
     const { data: invite, error: inviteError } = await supabaseAdmin
-      .from("invite_codes")
+      .from("marvellous_invite_codes")
       .select("id, role, expires_at, revoked_at, used_at")
       .eq("code", code)
       .maybeSingle();
@@ -62,7 +62,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
 
     const userId = created.user.id;
 
-    const { error: profileError } = await supabaseAdmin.from("staff_profiles").insert({
+    const { error: profileError } = await supabaseAdmin.from("marvellous_staff_profiles").insert({
       id: userId,
       full_name: data.fullName,
       email: data.email,
@@ -74,7 +74,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
 
     // Role comes from the invite only - never from anything the user sends.
     const { error: roleError } = await supabaseAdmin
-      .from("user_roles")
+      .from("marvellous_user_roles")
       .insert({ user_id: userId, role: invite.role });
     if (roleError) {
       await supabaseAdmin.auth.admin.deleteUser(userId);
@@ -82,7 +82,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
     }
 
     await supabaseAdmin
-      .from("invite_codes")
+      .from("marvellous_invite_codes")
       .update({ used_by: userId, used_at: new Date().toISOString() })
       .eq("id", invite.id)
       .is("used_at", null);
@@ -99,8 +99,8 @@ export const getMyAccess = createServerFn({ method: "GET" })
     const email = (context.claims["email"] as string | undefined) ?? "";
 
     const [{ data: profile }, { data: roles }] = await Promise.all([
-      context.supabase.from("staff_profiles").select("full_name").eq("id", userId).maybeSingle(),
-      context.supabase.from("user_roles").select("role").eq("user_id", userId),
+      context.supabase.from("marvellous_staff_profiles").select("full_name").eq("id", userId).maybeSingle(),
+      context.supabase.from("marvellous_user_roles").select("role").eq("user_id", userId),
     ]);
 
     return {
@@ -116,7 +116,7 @@ export const getMyAccess = createServerFn({ method: "GET" })
 async function assertAdmin(context: { supabase: any; userId: string }) {
   // Role check via RLS-protected user_roles (own rows are readable by the user).
   const { data, error } = await context.supabase
-    .from("user_roles")
+    .from("marvellous_user_roles")
     .select("role")
     .eq("user_id", context.userId)
     .eq("role", "admin")
@@ -138,10 +138,10 @@ export const listStaffAccounts = createServerFn({ method: "GET" })
     await assertAdmin(context as never);
     const [{ data: profiles, error }, { data: roles }] = await Promise.all([
       context.supabase
-        .from("staff_profiles")
+        .from("marvellous_staff_profiles")
         .select("id, full_name, email, created_at")
         .order("created_at", { ascending: true }),
-      context.supabase.from("user_roles").select("user_id, role"),
+      context.supabase.from("marvellous_user_roles").select("user_id, role"),
     ]);
     if (error) throw new Error(error.message);
     return (profiles ?? []).map((p) => ({
@@ -170,7 +170,7 @@ export const listInviteCodes = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<InviteCode[]> => {
     await assertAdmin(context as never);
     const { data, error } = await context.supabase
-      .from("invite_codes")
+      .from("marvellous_invite_codes")
       .select("id, code, role, created_at, expires_at, revoked_at, used_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -200,7 +200,7 @@ export const createInviteCode = createServerFn({ method: "POST" })
     await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const code = randomCode(data.role);
-    const { error } = await supabaseAdmin.from("invite_codes").insert({
+    const { error } = await supabaseAdmin.from("marvellous_invite_codes").insert({
       code,
       role: data.role,
       created_by: context.userId,
@@ -217,7 +217,7 @@ export const revokeInviteCode = createServerFn({ method: "POST" })
     await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
-      .from("invite_codes")
+      .from("marvellous_invite_codes")
       .update({ revoked_at: new Date().toISOString() })
       .eq("id", data.id)
       .is("used_at", null);

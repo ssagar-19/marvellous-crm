@@ -22,7 +22,7 @@ import type { Database } from "@/integrations/supabase/types";
 type AuthContext = { supabase: SupabaseClient<Database>; claims: Record<string, unknown> };
 
 const JOB_SELECT =
-  "id, job_reference, client_id, item_type, item_description, metal, stone, service, quoted_price, deposit_amount, promised_completion_date, priority, customer_notes, status, location, accepted_by, is_draft, created_at, completed_at, clients ( id, full_name, phone, email, postcode )";
+  "id, job_reference, client_id, item_type, item_description, metal, stone, service, quoted_price, deposit_amount, promised_completion_date, priority, customer_notes, status, location, accepted_by, is_draft, created_at, completed_at, marvellous_clients ( id, full_name, phone, email, postcode )";
 
 type RawJob = {
   id: string;
@@ -44,7 +44,7 @@ type RawJob = {
   is_draft: boolean;
   created_at: string;
   completed_at: string | null;
-  clients: {
+  marvellous_clients: {
     id: string;
     full_name: string;
     phone: string;
@@ -64,10 +64,10 @@ function toJobDTO(row: RawJob): JobDTO {
     id: row.id,
     reference: row.job_reference,
     clientId: row.client_id,
-    clientName: row.clients?.full_name ?? "Unknown client",
-    clientPhone: row.clients?.phone ?? "",
-    clientEmail: row.clients?.email ?? null,
-    clientPostcode: row.clients?.postcode ?? null,
+    clientName: row.marvellous_clients?.full_name ?? "Unknown client",
+    clientPhone: row.marvellous_clients?.phone ?? "",
+    clientEmail: row.marvellous_clients?.email ?? null,
+    clientPostcode: row.marvellous_clients?.postcode ?? null,
     itemType: row.item_type,
     itemDescription: row.item_description,
     metal: row.metal,
@@ -91,7 +91,7 @@ async function staffName(context: AuthContext) {
   const userId = context.claims["sub"] as string | undefined;
   if (userId) {
     const { data } = await context.supabase
-      .from("staff_profiles")
+      .from("marvellous_staff_profiles")
       .select("full_name")
       .eq("id", userId)
       .maybeSingle();
@@ -106,7 +106,7 @@ async function staffName(context: AuthContext) {
 export const listJobs = createServerFn({ method: "GET" }).middleware([requireSupabaseAuth]).handler(async ({ context }): Promise<JobDTO[]> => {
   const db = context.supabase;
   const { data, error } = await db
-    .from("jobs")
+    .from("marvellous_jobs")
     .select(JOB_SELECT)
     .eq("is_draft", false)
     .order("created_at", { ascending: false });
@@ -119,7 +119,7 @@ export const getJobByRef = createServerFn({ method: "GET" }).middleware([require
   .handler(async ({ data, context }): Promise<{ job: JobDTO; items: JobItemDTO[]; activity: ActivityDTO[] } | null> => {
     const db = context.supabase;
     const { data: rows, error } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .select(JOB_SELECT)
       .ilike("job_reference", data.ref)
       .limit(1);
@@ -128,14 +128,14 @@ export const getJobByRef = createServerFn({ method: "GET" }).middleware([require
     if (!row) return null;
 
     const { data: acts, error: actError } = await db
-      .from("job_activity")
+      .from("marvellous_job_activity")
       .select("id, activity_type, description, staff_name, created_at")
       .eq("job_id", row.id)
       .order("created_at", { ascending: true });
     if (actError) throw new Error(actError.message);
 
     const { data: itemRows, error: itemError } = await db
-      .from("job_items")
+      .from("marvellous_job_items")
       .select("id, position, item_type, service, metal, stone, item_description")
       .eq("job_id", row.id)
       .order("position", { ascending: true });
@@ -215,7 +215,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
     if (!clientId) {
       const digits = data.phone.replace(/\D/g, "");
       const { data: existing } = await db
-        .from("clients")
+        .from("marvellous_clients")
         .select("id")
         .eq("phone_digits", digits)
         .limit(1);
@@ -224,7 +224,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
 
     if (clientId) {
       await db
-        .from("clients")
+        .from("marvellous_clients")
         .update({
           full_name: data.fullName,
           phone: data.phone,
@@ -234,7 +234,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
         .eq("id", clientId);
     } else {
       const { data: inserted, error } = await db
-        .from("clients")
+        .from("marvellous_clients")
         .insert({
           full_name: data.fullName,
           phone: data.phone,
@@ -248,7 +248,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
     }
 
     const { data: job, error: jobError } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .insert({
         client_id: clientId,
         item_type: data.items.length > 1 ? `${first.itemType} +${data.items.length - 1}` : first.itemType,
@@ -259,7 +259,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
         quoted_price: data.quotedPrice ?? null,
         deposit_amount: data.depositAmount ?? null,
         promised_completion_date: data.promisedDate,
-        priority: data.priority,
+        priority: data.priority === "LOW" ? "NORMAL" : data.priority,
         customer_notes: data.customerNotes?.trim() ? data.customerNotes.trim() : null,
         status: data.needsQuote ? "TO_QUOTE" : "AWAITING_WORKSHOP",
         location: "FRONT_DESK",
@@ -270,7 +270,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
       .single();
     if (jobError) throw new Error(jobError.message);
 
-    const { error: itemsError } = await db.from("job_items").insert(
+    const { error: itemsError } = await db.from("marvellous_job_items").insert(
       data.items.map((item, index) => ({
         job_id: job.id,
         position: index + 1,
@@ -284,7 +284,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
     if (itemsError) throw new Error(itemsError.message);
 
     const itemSummary = data.items.length === 1 ? "1 item" : `${data.items.length} items`;
-    await db.from("job_activity").insert({
+    await db.from("marvellous_job_activity").insert({
       job_id: job.id,
       activity_type: data.isDraft ? "DRAFT_SAVED" : "CREATED",
       description: data.isDraft
@@ -304,7 +304,7 @@ export const updateJobStatus = createServerFn({ method: "POST" }).middleware([re
     const db = context.supabase;
     const staff = await staffName(context as AuthContext);
     const { data: current, error } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .select("id, status, job_reference")
       .eq("id", data.jobId)
       .single();
@@ -320,7 +320,7 @@ export const updateJobStatus = createServerFn({ method: "POST" }).middleware([re
 
     const closes = data.status === "COMPLETED" || data.status === "COLLECTED";
     const { error: upError } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .update(
         closes
           ? { status: data.status, completed_at: new Date().toISOString() }
@@ -329,7 +329,7 @@ export const updateJobStatus = createServerFn({ method: "POST" }).middleware([re
       .eq("id", data.jobId);
     if (upError) throw new Error(upError.message);
 
-    await db.from("job_activity").insert({
+    await db.from("marvellous_job_activity").insert({
       job_id: data.jobId,
       activity_type: "STATUS_CHANGE",
       description: `Status changed from ${statusLabels[from]} to ${statusLabels[data.status]}.`,
@@ -348,7 +348,7 @@ export const recordJobQuote = createServerFn({ method: "POST" }).middleware([req
     const db = context.supabase;
     const staff = await staffName(context as AuthContext);
     const { data: current, error } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .select("id, status")
       .eq("id", data.jobId)
       .single();
@@ -360,12 +360,12 @@ export const recordJobQuote = createServerFn({ method: "POST" }).middleware([req
     }
 
     const { error: upError } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .update({ quoted_price: data.quotedPrice, status: "AWAITING_APPROVAL" })
       .eq("id", data.jobId);
     if (upError) throw new Error(upError.message);
 
-    await db.from("job_activity").insert({
+    await db.from("marvellous_job_activity").insert({
       job_id: data.jobId,
       activity_type: "QUOTE_RECORDED",
       description: `Quote of \u00a3${data.quotedPrice.toFixed(2)} recorded. Sent to the customer for approval.`,
@@ -382,7 +382,7 @@ export const updateJobLocation = createServerFn({ method: "POST" }).middleware([
     const db = context.supabase;
     const staff = await staffName(context as AuthContext);
     const { data: current, error } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .select("id, location")
       .eq("id", data.jobId)
       .single();
@@ -390,12 +390,12 @@ export const updateJobLocation = createServerFn({ method: "POST" }).middleware([
     if (current.location === data.location) return { ok: true };
 
     const { error: upError } = await db
-      .from("jobs")
-      .update({ location: data.location })
+      .from("marvellous_jobs")
+      .update({ location: data.location as any })
       .eq("id", data.jobId);
     if (upError) throw new Error(upError.message);
 
-    await db.from("job_activity").insert({
+    await db.from("marvellous_job_activity").insert({
       job_id: data.jobId,
       activity_type: "LOCATION_CHANGE",
       description: `Moved from ${locationLabels[current.location as keyof typeof locationLabels]} to ${locationLabels[data.location]}.`,
@@ -417,15 +417,15 @@ export const listClients = createServerFn({ method: "GET" }).middleware([require
   async ({ context }): Promise<ClientWithJobs[]> => {
     const db = context.supabase;
     const { data, error } = await db
-      .from("clients")
+      .from("marvellous_clients")
       .select(
-        "id, full_name, phone, email, postcode, notes, created_at, jobs ( id, status, quoted_price, deposit_amount, created_at )",
+        "id, full_name, phone, email, postcode, notes, created_at, marvellous_jobs ( id, status, quoted_price, deposit_amount, created_at )",
       )
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
     return (data ?? []).map((c) => {
-      const jobs = (c.jobs ?? []) as {
+      const jobs = (c.marvellous_jobs ?? []) as unknown as {
         id: string;
         status: string;
         quoted_price: string | number | null;
@@ -463,7 +463,7 @@ export const getClient = createServerFn({ method: "GET" }).middleware([requireSu
   .handler(async ({ data, context }): Promise<{ client: ClientDTO; jobs: JobDTO[] } | null> => {
     const db = context.supabase;
     const { data: client, error } = await db
-      .from("clients")
+      .from("marvellous_clients")
       .select("id, full_name, phone, email, postcode, notes, created_at")
       .eq("id", data.id)
       .maybeSingle();
@@ -471,7 +471,7 @@ export const getClient = createServerFn({ method: "GET" }).middleware([requireSu
     if (!client) return null;
 
     const { data: jobs, error: jobsError } = await db
-      .from("jobs")
+      .from("marvellous_jobs")
       .select(JOB_SELECT)
       .eq("client_id", data.id)
       .order("created_at", { ascending: false });
@@ -501,7 +501,7 @@ export const searchClients = createServerFn({ method: "GET" }).middleware([requi
     const filters = [`full_name.ilike.%${term}%`, `email.ilike.%${term}%`, `postcode.ilike.%${term}%`];
     if (digits.length >= 3) filters.push(`phone_digits.ilike.%${digits}%`);
     const { data: rows, error } = await db
-      .from("clients")
+      .from("marvellous_clients")
       .select("id, full_name, phone, email, postcode, notes, created_at")
       .or(filters.join(","))
       .limit(8);
@@ -549,13 +549,13 @@ export const globalSearch = createServerFn({ method: "GET" }).middleware([requir
 
     const [clientsRes, jobsRes] = await Promise.all([
       db
-        .from("clients")
+        .from("marvellous_clients")
         .select("id, full_name, phone, email, postcode")
         .or(clientFilters.join(","))
         .limit(6),
       db
-        .from("jobs")
-        .select("job_reference, item_type, service, status, location, clients ( full_name )")
+        .from("marvellous_jobs")
+        .select("job_reference, item_type, service, status, location, marvellous_clients ( full_name )")
         .or(jobFilters.join(","))
         .limit(6),
     ]);
@@ -577,11 +577,11 @@ export const globalSearch = createServerFn({ method: "GET" }).middleware([requir
         service: string;
         status: string;
         location: string;
-        clients: { full_name: string } | null;
+        marvellous_clients: { full_name: string } | null;
       }[]).map((j) => ({
         reference: j.job_reference,
         title: `${j.item_type} — ${j.service}`,
-        client: j.clients?.full_name ?? "Unknown client",
+        client: j.marvellous_clients?.full_name ?? "Unknown client",
         status: j.status as JobStatus,
         location: j.location,
       })),
@@ -596,8 +596,8 @@ export const locatePiece = createServerFn({ method: "GET" }).middleware([require
     const reference = /^mj-/i.test(raw) ? raw.toUpperCase() : `MJ-${raw.replace(/\D/g, "")}`;
     const db = context.supabase;
     const { data: rows, error } = await db
-      .from("jobs")
-      .select("job_reference, item_type, item_description, status, location, clients ( full_name )")
+      .from("marvellous_jobs")
+      .select("job_reference, item_type, item_description, status, location, marvellous_clients ( full_name )")
       .ilike("job_reference", reference)
       .limit(1);
     if (error) throw new Error(error.message);
@@ -608,7 +608,7 @@ export const locatePiece = createServerFn({ method: "GET" }).middleware([require
           item_description: string;
           status: string;
           location: string;
-          clients: { full_name: string } | null;
+          marvellous_clients: { full_name: string } | null;
         }
       | undefined;
     if (!row) return null;
@@ -618,6 +618,6 @@ export const locatePiece = createServerFn({ method: "GET" }).middleware([require
       description: row.item_description,
       status: row.status as JobStatus,
       location: row.location,
-      client: row.clients?.full_name ?? "Unknown client",
+      client: row.marvellous_clients?.full_name ?? "Unknown client",
     };
   });

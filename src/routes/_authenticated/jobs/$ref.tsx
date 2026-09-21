@@ -1,12 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { jobQuery } from "@/lib/crm-queries";
 import { useState } from "react";
 import {
   ArrowLeft, MoreHorizontal, MapPin, Gem, Image as ImageIcon, FileText, Clock, Zap,
   Plus, Printer, Check, Wrench, PoundSterling, User, Calendar, CircleCheck, Loader2, Upload,
 } from "lucide-react";
 import { PanelError, PanelLoading } from "@/components/app-shell";
-import { jobQuery } from "@/lib/crm-queries";
+
 import { recordJobQuote, updateJobLocation, updateJobStatus } from "@/lib/crm.functions";
 import {
   JOB_LOCATIONS, allowedTransitions, formatDate, formatDateTime, locationLabels, money,
@@ -177,25 +178,43 @@ function JobDetail() {
       </div>
 
       <section className="glass-inset rounded-xl px-4 py-3">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-          <Zap className="size-3.5 text-gold" /> Quick Actions
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-          <button type="button" onClick={() => window.print()} className="glass flex items-center gap-2 rounded-lg px-3 py-2">
-            <Printer className="size-4 text-gold" /> Print Job Sheet
-          </button>
-          <span className="glass flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground">
-            <Upload className="size-4 text-gold" /> Photo upload next phase
-          </span>
-          {awaitingQuote ? (
-            <span className="glass flex items-center gap-2 rounded-lg px-3 py-2">
-              <PoundSterling className="size-4 text-gold" />
-              <input
-                className="w-28 bg-transparent text-sm outline-none"
-                type="number" min="0" step="0.01" placeholder="Quote amount"
-                value={quote}
-                onChange={(e) => setQuote(e.target.value)}
-              />
+  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+    <Zap className="size-3.5 text-gold" /> Quick Actions
+  </div>
+
+  <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+    <button
+      type="button"
+      onClick={() => window.print()}
+      className="glass flex items-center gap-2 rounded-lg px-3 py-2"
+    >
+      <Printer className="size-4 text-gold" /> Print Job Sheet
+    </button>
+
+   <Link
+  to="/invoices/$id"
+  params={{ id: ref }}
+  className="glass flex items-center gap-2 rounded-lg px-3 py-2"
+>
+  <FileText className="size-4 text-gold" /> Invoice
+</Link>
+
+    <span className="glass flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground">
+      <Upload className="size-4 text-gold" /> Photo upload next phase
+    </span>
+
+    {awaitingQuote ? (
+      <span className="glass flex items-center gap-2 rounded-lg px-3 py-2">
+        <PoundSterling className="size-4 text-gold" />
+        <input
+          className="w-28 bg-transparent text-sm outline-none"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="Quote amount"
+          value={quote}
+          onChange={(e) => setQuote(e.target.value)}
+        />
               <button type="button" disabled={busy || quote.trim() === ""}
                 onClick={() => quoteMutation.mutate(Number(quote))}
                 className="text-gold disabled:opacity-50">Send quote</button>

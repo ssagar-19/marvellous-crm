@@ -14,7 +14,318 @@ export type Database = {
   }
   public: {
     Tables: {
-      clients: {
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      company_invite_codes: {
+        Row: {
+          code_hash: string
+          code_prefix: string
+          company_id: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          max_uses: number
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["company_role"]
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          code_hash: string
+          code_prefix: string
+          company_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["company_role"]
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          code_hash?: string
+          code_prefix?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["company_role"]
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_invite_codes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["company_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["company_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["company_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_settings: {
+        Row: {
+          address: string | null
+          company_id: string | null
+          company_name: string
+          created_at: string
+          email: string | null
+          id: string
+          invoice_prefix: string
+          logo_url: string | null
+          next_invoice_number: number
+          phone: string | null
+          updated_at: string
+          vat_number: string | null
+          vat_rate: number
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_id?: string | null
+          company_name: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          invoice_prefix?: string
+          logo_url?: string | null
+          next_invoice_number?: number
+          phone?: string | null
+          updated_at?: string
+          vat_number?: string | null
+          vat_rate?: number
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_id?: string | null
+          company_name?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          invoice_prefix?: string
+          logo_url?: string | null
+          next_invoice_number?: number
+          phone?: string | null
+          updated_at?: string
+          vat_number?: string | null
+          vat_rate?: number
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          address: string | null
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_name: string | null
+          engineer: string | null
+          findings: string | null
+          id: string
+          invoice_number: string | null
+          issue: string | null
+          job_date: string | null
+          job_number: string | null
+          labour_cost: number
+          materials_cost: number
+          missing_info: string[]
+          other_cost: number
+          other_cost_description: string | null
+          recommendations: string | null
+          report: string | null
+          status: string
+          subtotal: number
+          total: number
+          transcript: string | null
+          updated_at: string
+          vat: number
+          work_carried_out: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string | null
+          engineer?: string | null
+          findings?: string | null
+          id?: string
+          invoice_number?: string | null
+          issue?: string | null
+          job_date?: string | null
+          job_number?: string | null
+          labour_cost?: number
+          materials_cost?: number
+          missing_info?: string[]
+          other_cost?: number
+          other_cost_description?: string | null
+          recommendations?: string | null
+          report?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          transcript?: string | null
+          updated_at?: string
+          vat?: number
+          work_carried_out?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string | null
+          engineer?: string | null
+          findings?: string | null
+          id?: string
+          invoice_number?: string | null
+          issue?: string | null
+          job_date?: string | null
+          job_number?: string | null
+          labour_cost?: number
+          materials_cost?: number
+          missing_info?: string[]
+          other_cost?: number
+          other_cost_description?: string | null
+          recommendations?: string | null
+          report?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+          transcript?: string | null
+          updated_at?: string
+          vat?: number
+          work_carried_out?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marvellous_business_settings: {
+        Row: {
+          address_line_1: string
+          address_line_2: string | null
+          business_name: string
+          city: string
+          created_at: string
+          email: string
+          id: number
+          logo_url: string | null
+          phone: string
+          postcode: string
+          updated_at: string
+          vat_number: string | null
+          website: string | null
+        }
+        Insert: {
+          address_line_1?: string
+          address_line_2?: string | null
+          business_name?: string
+          city?: string
+          created_at?: string
+          email?: string
+          id?: number
+          logo_url?: string | null
+          phone?: string
+          postcode?: string
+          updated_at?: string
+          vat_number?: string | null
+          website?: string | null
+        }
+        Update: {
+          address_line_1?: string
+          address_line_2?: string | null
+          business_name?: string
+          city?: string
+          created_at?: string
+          email?: string
+          id?: number
+          logo_url?: string | null
+          phone?: string
+          postcode?: string
+          updated_at?: string
+          vat_number?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      marvellous_clients: {
         Row: {
           created_at: string
           email: string | null
@@ -50,7 +361,7 @@ export type Database = {
         }
         Relationships: []
       }
-      invite_codes: {
+      marvellous_invite_codes: {
         Row: {
           code: string
           created_at: string
@@ -58,7 +369,7 @@ export type Database = {
           expires_at: string | null
           id: string
           revoked_at: string | null
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["marvellous_app_role"]
           used_at: string | null
           used_by: string | null
         }
@@ -69,7 +380,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           revoked_at?: string | null
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["marvellous_app_role"]
           used_at?: string | null
           used_by?: string | null
         }
@@ -80,13 +391,13 @@ export type Database = {
           expires_at?: string | null
           id?: string
           revoked_at?: string | null
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["marvellous_app_role"]
           used_at?: string | null
           used_by?: string | null
         }
         Relationships: []
       }
-      job_activity: {
+      marvellous_job_activity: {
         Row: {
           activity_type: string
           created_at: string
@@ -113,15 +424,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "job_activity_job_id_fkey"
+            foreignKeyName: "marvellous_job_activity_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: "jobs"
+            referencedRelation: "marvellous_jobs"
             referencedColumns: ["id"]
           },
         ]
       }
-      job_items: {
+      marvellous_job_items: {
         Row: {
           created_at: string
           id: string
@@ -157,15 +468,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "job_items_job_id_fkey"
+            foreignKeyName: "marvellous_job_items_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: "jobs"
+            referencedRelation: "marvellous_jobs"
             referencedColumns: ["id"]
           },
         ]
       }
-      job_photos: {
+      marvellous_job_photos: {
         Row: {
           caption: string | null
           created_at: string
@@ -192,15 +503,15 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "job_photos_job_id_fkey"
+            foreignKeyName: "marvellous_job_photos_job_id_fkey"
             columns: ["job_id"]
             isOneToOne: false
-            referencedRelation: "jobs"
+            referencedRelation: "marvellous_jobs"
             referencedColumns: ["id"]
           },
         ]
       }
-      jobs: {
+      marvellous_jobs: {
         Row: {
           accepted_by: string | null
           client_id: string
@@ -213,13 +524,13 @@ export type Database = {
           item_description: string
           item_type: string
           job_reference: string
-          location: Database["public"]["Enums"]["job_location"]
+          location: Database["public"]["Enums"]["marvellous_job_location"]
           metal: string | null
-          priority: Database["public"]["Enums"]["job_priority"]
+          priority: Database["public"]["Enums"]["marvellous_job_priority"]
           promised_completion_date: string | null
           quoted_price: number | null
           service: string
-          status: Database["public"]["Enums"]["job_status"]
+          status: Database["public"]["Enums"]["marvellous_job_status"]
           stone: string | null
           updated_at: string
         }
@@ -235,13 +546,13 @@ export type Database = {
           item_description: string
           item_type: string
           job_reference?: string
-          location?: Database["public"]["Enums"]["job_location"]
+          location?: Database["public"]["Enums"]["marvellous_job_location"]
           metal?: string | null
-          priority?: Database["public"]["Enums"]["job_priority"]
+          priority?: Database["public"]["Enums"]["marvellous_job_priority"]
           promised_completion_date?: string | null
           quoted_price?: number | null
           service: string
-          status?: Database["public"]["Enums"]["job_status"]
+          status?: Database["public"]["Enums"]["marvellous_job_status"]
           stone?: string | null
           updated_at?: string
         }
@@ -257,27 +568,27 @@ export type Database = {
           item_description?: string
           item_type?: string
           job_reference?: string
-          location?: Database["public"]["Enums"]["job_location"]
+          location?: Database["public"]["Enums"]["marvellous_job_location"]
           metal?: string | null
-          priority?: Database["public"]["Enums"]["job_priority"]
+          priority?: Database["public"]["Enums"]["marvellous_job_priority"]
           promised_completion_date?: string | null
           quoted_price?: number | null
           service?: string
-          status?: Database["public"]["Enums"]["job_status"]
+          status?: Database["public"]["Enums"]["marvellous_job_status"]
           stone?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "jobs_client_id_fkey"
+            foreignKeyName: "marvellous_jobs_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "clients"
+            referencedRelation: "marvellous_clients"
             referencedColumns: ["id"]
           },
         ]
       }
-      staff_profiles: {
+      marvellous_staff_profiles: {
         Row: {
           created_at: string
           email: string
@@ -301,23 +612,23 @@ export type Database = {
         }
         Relationships: []
       }
-      user_roles: {
+      marvellous_user_roles: {
         Row: {
           created_at: string
           id: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["marvellous_app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          role: Database["public"]["Enums"]["app_role"]
+          role: Database["public"]["Enums"]["marvellous_app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
+          role?: Database["public"]["Enums"]["marvellous_app_role"]
           user_id?: string
         }
         Relationships: []
@@ -327,35 +638,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_own_company: { Args: { _name?: string }; Returns: string }
+      has_company_role: {
+        Args: {
+          _company_id: string
+          _role: Database["public"]["Enums"]["company_role"]
+        }
+        Returns: boolean
+      }
+      is_company_asset_path: { Args: { _name: string }; Returns: boolean }
+      is_company_member: { Args: { _company_id: string }; Returns: boolean }
+      redeem_company_invite_code: {
+        Args: { _code: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      app_role: "admin" | "management" | "workshop_staff"
-      job_location:
-        | "FRONT_DESK"
-        | "WORKSHOP"
-        | "BENCH_1"
-        | "BENCH_2"
-        | "BENCH_3"
-        | "QC"
-      job_priority: "LOW" | "NORMAL" | "HIGH" | "URGENT"
-      job_status:
+      company_role: "owner_admin" | "engineer"
+      marvellous_app_role: "admin" | "staff"
+      marvellous_job_location: "FRONT_DESK" | "WORKSHOP"
+      marvellous_job_priority: "NORMAL" | "HIGH" | "URGENT"
+      marvellous_job_status:
         | "NEW"
+        | "TO_QUOTE"
         | "AWAITING_WORKSHOP"
         | "RECEIVED"
         | "INSPECTION"
         | "AWAITING_APPROVAL"
         | "IN_PROGRESS"
+        | "WAITING_FOR_PARTS"
         | "AWAITING_QC"
+        | "RETURNED_TO_WORKSHOP"
         | "READY_FOR_COLLECTION"
         | "COLLECTED"
         | "COMPLETED"
-        | "WAITING_FOR_PARTS"
         | "CUSTOMER_DECLINED"
         | "CANCELLED"
-        | "RETURNED_TO_WORKSHOP"
         | "ON_HOLD"
-        | "TO_QUOTE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -483,33 +802,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "management", "workshop_staff"],
-      job_location: [
-        "FRONT_DESK",
-        "WORKSHOP",
-        "BENCH_1",
-        "BENCH_2",
-        "BENCH_3",
-        "QC",
-      ],
-      job_priority: ["LOW", "NORMAL", "HIGH", "URGENT"],
-      job_status: [
+      company_role: ["owner_admin", "engineer"],
+      marvellous_app_role: ["admin", "staff"],
+      marvellous_job_location: ["FRONT_DESK", "WORKSHOP"],
+      marvellous_job_priority: ["NORMAL", "HIGH", "URGENT"],
+      marvellous_job_status: [
         "NEW",
+        "TO_QUOTE",
         "AWAITING_WORKSHOP",
         "RECEIVED",
         "INSPECTION",
         "AWAITING_APPROVAL",
         "IN_PROGRESS",
+        "WAITING_FOR_PARTS",
         "AWAITING_QC",
+        "RETURNED_TO_WORKSHOP",
         "READY_FOR_COLLECTION",
         "COLLECTED",
         "COMPLETED",
-        "WAITING_FOR_PARTS",
         "CUSTOMER_DECLINED",
         "CANCELLED",
-        "RETURNED_TO_WORKSHOP",
         "ON_HOLD",
-        "TO_QUOTE",
       ],
     },
   },
