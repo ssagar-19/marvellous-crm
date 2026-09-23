@@ -26,7 +26,7 @@ function NewJobPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <Link
             to="/new-repair"
-            className="group rounded-2xl border border-border bg-card p-8 transition-all hover:-translate-y-1 hover:shadow-lg"
+            className="glass group rounded-2xl p-8 transition-all hover:-translate-y-1 hover:shadow-lg"
           >
             <div className="mb-6 flex size-14 items-center justify-center rounded-xl bg-muted">
               <Wrench className="size-6 text-gold" />
@@ -46,7 +46,7 @@ function NewJobPage() {
             </div>
           </Link>
 
-          <div className="rounded-2xl border border-border bg-card p-8 opacity-90">
+          <Link to="/new-bespoke" className="glass group block rounded-2xl p-8 transition hover:border-gold/50">
             <div className="mb-6 flex size-14 items-center justify-center rounded-xl bg-muted">
               <Gem className="size-6 text-gold" />
             </div>
@@ -60,10 +60,11 @@ function NewJobPage() {
               design and production stages.
             </p>
 
-            <div className="mt-8 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Coming after process confirmation
+            <div className="mt-8 flex items-center justify-between text-xs font-medium uppercase tracking-wider text-gold">
+              Open Bespoke Project
+              <span className="transition-transform group-hover:translate-x-1">→</span>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

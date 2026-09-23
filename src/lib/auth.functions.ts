@@ -27,6 +27,30 @@ const signUpSchema = z.object({
   inviteCode: z.string().trim().min(3, "A referral code is required"),
 });
 
+export const verifyInviteCode = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) =>
+    z.object({ inviteCode: z.string().trim().min(3) }).parse(d),
+  )
+  .handler(async ({ data }): Promise<{ ok: true; role: AppRole }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const code = data.inviteCode.trim().toUpperCase();
+
+    const { data: invite, error } = await supabaseAdmin
+      .from("marvellous_invite_codes")
+      .select("role, expires_at, revoked_at, used_at")
+      .eq("code", code)
+      .maybeSingle();
+
+    if (error || !invite) throw new Error("That referral code is not recognised.");
+    if (invite.revoked_at) throw new Error("That referral code has been revoked.");
+    if (invite.used_at) throw new Error("That referral code has already been used.");
+    if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
+      throw new Error("That referral code has expired.");
+    }
+
+    return { ok: true, role: invite.role as AppRole };
+  });
+
 /**
  * Invite-only staff onboarding. Public sign-up is disabled at the auth
  * provider, so accounts can only be created through a valid invite code.
@@ -53,7 +77,6 @@ export const staffSignUp = createServerFn({ method: "POST" })
     const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
       password: data.password,
-      email_confirm: true,
       user_metadata: { full_name: data.fullName },
     });
     if (createError || !created?.user) {

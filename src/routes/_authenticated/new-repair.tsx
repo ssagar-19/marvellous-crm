@@ -1,3 +1,4 @@
+import { GlassSelect } from "@/components/glass-select";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -22,12 +23,15 @@ export const Route = createFileRoute("/_authenticated/new-repair")({
   component: NewJob,
 });
 
-function Card({ step, title, icon: Icon, children }: { step?: string; title: string; icon: React.ElementType; children: React.ReactNode }) {
+function Card({ step, title, icon: Icon, children, action }: { step?: string; title: string; icon: React.ElementType; children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <section className="glass rounded-2xl p-5">
-      <div className="flex items-center gap-3">
-        <span className="grid size-9 place-items-center rounded-lg border border-gold/30 bg-gold/10"><Icon className="size-4 text-gold" /></span>
-        <h2 className="font-display text-xl">{step ? `${step}. ` : ""}{title}</h2>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="grid size-9 place-items-center rounded-lg border border-gold/30 bg-gold/10"><Icon className="size-4 text-gold" /></span>
+          <h2 className="font-display text-xl">{step ? `${step}. ` : ""}{title}</h2>
+        </div>
+        {action}
       </div>
       <div className="mt-4">{children}</div>
     </section>
@@ -49,6 +53,7 @@ type ItemForm = {
   metal: string;
   stone: string;
   description: string;
+  quantity: number;
 };
 
 const emptyItem: ItemForm = {
@@ -57,6 +62,7 @@ const emptyItem: ItemForm = {
   metal: "",
   stone: "",
   description: "",
+  quantity: 1,
 };
 
 const ITEM_TYPES = [
@@ -76,6 +82,8 @@ const SERVICES = [
   "Engraving",
   "Full Service",
   "Polish",
+  "Plating",
+  "Polishing & Plating",
   "Resize",
   "Stone Replacement",
   "Valuation",
@@ -162,8 +170,8 @@ function NewJob() {
   if (form.fullName.trim().length < 2)
     problems.push("Customer name is required.");
 
-  if (form.phone.trim().length < 6)
-    problems.push("Customer phone number is required.");
+  if (form.phone.trim().length > 0 && form.phone.trim().length < 6)
+    problems.push("Customer phone number must be at least 6 characters.");
 
   if (!form.promisedDate.trim())
     problems.push("Promised completion date is required.");
@@ -251,10 +259,9 @@ function NewJob() {
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-4">
-          <span className="grid size-11 place-items-center rounded-full border border-gold/40 bg-gold/10"><User className="size-5 text-gold" /></span>
           <div>
             <h1 className="font-display text-4xl leading-none">Create New Job</h1>
-            <p className="mt-2 text-sm text-muted-foreground">Add a new customer and job to the system. All fields marked with <span className="text-gold">*</span> are required.</p>
+   
           </div>
         </div>
         <Link to="/jobs" className="glass flex h-11 items-center gap-2 rounded-xl px-4 text-sm"><ArrowLeft className="size-4 text-gold" /> Back</Link>
@@ -271,31 +278,34 @@ function NewJob() {
 
       <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-5">
-          <Card step="1" title="Customer Details" icon={User}>
+          <Card
+            step="1"
+            title="Customer Details"
+            icon={User}
+            action={
+              <button
+                type="button"
+                onClick={() => void findClient()}
+                className="glass-gold rounded-lg px-4 py-2.5 text-sm text-gold"
+              >
+                {searching ? "Searching…" : "Search Customer →"}
+              </button>
+            }
+          >
             <div className="grid gap-4 md:grid-cols-4">
               {([
                 ["Name", "e.g. Sarah Hamilton", "fullName", true],
-                ["Number", "e.g. 07700 900123", "phone", true],
+                ["Number", "e.g. 07700 900123", "phone", false],
                 ["Email", "e.g. sarah@example.com", "email", false],
                 ["Postcode", "e.g. SW1A 1AA", "postcode", false],
               ] as const).map(([label, ph, key, required]) => (
                 <label key={key} className="block text-sm">
                   <span className="mb-2 block text-muted-foreground">
-                    {label} {required ? <span className="text-gold">*</span> : <span className="text-xs">(optional)</span>}
+                    {label}
                   </span>
                   <input className={field} placeholder={ph} value={form[key]} onChange={set(key)} />
                 </label>
               ))}
-            </div>
-            <div className="glass-gold mt-4 flex flex-wrap items-center gap-4 rounded-xl p-4">
-              <span className="grid size-10 place-items-center rounded-full border border-gold/40"><Search className="size-4 text-gold" /></span>
-              <div className="text-sm">
-                <div className="font-semibold">{clientId ? "Existing customer linked" : "Existing customer?"}</div>
-                <div className="text-muted-foreground">{clientId ? "This job will be added to their record." : "Search to see if this customer already exists in the system."}</div>
-              </div>
-              <button type="button" onClick={() => void findClient()} className="glass-gold ml-auto rounded-lg px-4 py-2.5 text-sm text-gold">
-                {searching ? "Searching…" : "Search Customer →"}
-              </button>
             </div>
             {matches ? (
               <div className="glass mt-3 rounded-xl p-2 text-sm">
@@ -321,18 +331,60 @@ function NewJob() {
                       </button>
                     ) : null}
                   </div>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr]">
                     <label className="text-sm"><span className="mb-2 block text-muted-foreground">Item type <span className="text-gold">*</span></span>
-                      <select className={field} value={item.itemType} onChange={setItem(index, "itemType")}>
-                        <option value="">Select item</option>
-                        {ITEM_TYPES.map((o) => <option key={o}>{o}</option>)}
-                      </select>
+                      <GlassSelect
+                        value={item.itemType}
+                        onChange={(value) => setItems((list) =>
+                          list.map((entry, i) =>
+                            i === index ? { ...entry, itemType: value } : entry
+                          )
+                        )}
+                        options={[
+                          { value: "", label: "Select item" },
+                          ...ITEM_TYPES.map((o) => ({ value: o, label: o })),
+                        ]}
+                        placeholder="Select item"
+                      />
                     </label>
+
+                    <div className="text-sm">
+                      <span className="mb-2 block text-muted-foreground">Quantity</span>
+                      <div className="flex h-11 items-center overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                        <button
+                          type="button"
+                          onClick={() => setItems((list) => list.map((entry, i) => i === index ? { ...entry, quantity: Math.max(1, entry.quantity - 1) } : entry))}
+                          className="grid h-full w-10 place-items-center text-lg text-muted-foreground transition hover:bg-white/10 hover:text-gold"
+                        >
+                          −
+                        </button>
+                        <span className="grid h-full min-w-10 place-items-center border-x border-white/10 text-sm font-medium">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setItems((list) => list.map((entry, i) => i === index ? { ...entry, quantity: entry.quantity + 1 } : entry))}
+                          className="grid h-full w-10 place-items-center text-lg text-muted-foreground transition hover:bg-white/10 hover:text-gold"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
                     <label className="text-sm"><span className="mb-2 block text-muted-foreground">Requested work <span className="text-gold">*</span></span>
-                      <select className={field} value={item.service} onChange={setItem(index, "service")}>
-                        <option value="">Repair / Service</option>
-                        {SERVICES.map((o) => <option key={o}>{o}</option>)}
-                      </select>
+                      <GlassSelect
+                        value={item.service}
+                        onChange={(value) => setItems((list) =>
+                          list.map((entry, i) =>
+                            i === index ? { ...entry, service: value } : entry
+                          )
+                        )}
+                        options={[
+                          { value: "", label: "Repair / Service" },
+                          ...SERVICES.map((o) => ({ value: o, label: o })),
+                        ]}
+                        placeholder="Repair / Service"
+                      />
                     </label>
                   </div>
                   <label className="mt-4 block text-sm">
@@ -350,25 +402,7 @@ function NewJob() {
             </div>
           </Card>
 
-          <Card step="3" title="Job Details" icon={FileText}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Quoted price (£) <span className="text-xs">(optional)</span></span>
-                <input className={field} type="number" min="0" step="0.01" placeholder="Leave blank if unknown" value={form.quotedPrice} onChange={set("quotedPrice")} />
-              </label>
-              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Deposit taken (£) <span className="text-xs">(optional)</span></span>
-                <input className={field} type="number" min="0" step="0.01" placeholder="Leave blank if none" value={form.depositAmount} onChange={set("depositAmount")} />
-              </label>
-              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Promised completion date <span className="text-gold">*</span></span>
-                <input className={field} type="date" value={form.promisedDate} onChange={set("promisedDate")} />
-              </label>
-              
-              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Priority <span className="text-gold">*</span></span>
-                <select className={field} value={form.priority} onChange={set("priority")}>
-                  {JOB_PRIORITIES.map((p) => <option key={p} value={p}>{priorityLabels[p]}</option>)}
-                </select>
-              </label>
-            </div>
-          </Card>
+
 
           <Card step="4" title="Photos" icon={ImageIcon}>
             <div className="flex flex-wrap gap-4">
@@ -399,28 +433,50 @@ function NewJob() {
             <div className="flex items-center justify-center gap-3 rounded-xl border border-dashed border-gold/40 py-4 font-display text-2xl text-gold">MJ-***** <Lock className="size-4" /></div>
           </Card>
 
-          <Card title="Customer History" icon={History}>
-            <div className="py-4 text-center text-sm">
-              {clientId ? <>
-                <div className="font-semibold">Existing customer selected.</div>
-                <p className="mt-2 text-muted-foreground">
-                  <Link to="/clients/$id" params={{ id: clientId }} className="text-gold">Open their record</Link> to see previous jobs.
-                </p>
-              </> : <>
-                <div className="font-semibold">No previous jobs found.</div>
-                <p className="mt-2 text-muted-foreground">Once you save this job, customer history will appear here.</p>
-              </>}
+
+
+          <Card step="3" title="Job Details" icon={FileText}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Quoted price</span>
+                <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="" value={form.quotedPrice} placeholder="0" onChange={set("quotedPrice")} onBlur={() => { if (!form.quotedPrice) setForm((f) => ({ ...f, quotedPrice: "0" })); }} />
+              </label>
+              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Deposit taken</span>
+                <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="" value={form.depositAmount} placeholder="0" onChange={set("depositAmount")} onBlur={() => { if (!form.depositAmount) setForm((f) => ({ ...f, depositAmount: "0" })); }} />
+              </label>
+              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Promised completion date <span className="text-gold">*</span></span>
+                <input className={field} type="date" value={form.promisedDate} onChange={set("promisedDate")} />
+              </label>
+              
+              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Priority <span className="text-gold">*</span></span>
+                <GlassSelect
+                  value={form.priority}
+                  onChange={(value) =>
+                    setForm((current) => ({
+                      ...current,
+                      priority: value as typeof current.priority,
+                    }))
+                  }
+                  options={JOB_PRIORITIES.map((p) => ({
+                    value: p,
+                    label: priorityLabels[p],
+                  }))}
+                />
+              </label>
             </div>
           </Card>
 
+
+
           <Card title="Quick Actions" icon={Zap}>
             <div className="space-y-2 text-sm">
-              <button type="button" disabled={busy !== null} onClick={() => void submit(true)} className="glass flex w-full items-center gap-3 rounded-xl px-4 py-3 disabled:opacity-60">
-                {busy === "draft" ? <Loader2 className="size-4 animate-spin text-gold" /> : <Save className="size-4 text-gold" />} Save as Draft
-              </button>
               <button type="button" disabled={busy !== null} onClick={() => void submit(false)} className="glass-gold flex w-full items-center gap-3 rounded-xl px-4 py-3 text-gold disabled:opacity-60">
                 {busy === "job" ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />} Create Job
               </button>
+
+              <button type="button" disabled={busy !== null} onClick={() => void submit(true)} className="glass flex w-full items-center gap-3 rounded-xl px-4 py-3 disabled:opacity-60">
+                {busy === "draft" ? <Loader2 className="size-4 animate-spin text-gold" /> : <Save className="size-4 text-gold" />} Save as Draft
+              </button>
+
               <button type="button" onClick={() => { setForm({ ...empty }); setItems([{ ...emptyItem }]); setClientId(null); setErrors([]); setMatches(null); setSavedDraft(null); }} className="glass flex w-full items-center gap-3 rounded-xl px-4 py-3 text-destructive">
                 <Trash2 className="size-4" /> Clear Form
               </button>

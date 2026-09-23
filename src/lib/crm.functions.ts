@@ -180,7 +180,7 @@ export const getJobByRef = createServerFn({ method: "GET" }).middleware([require
 const jobItemSchema = z.object({
   itemType: z.string().trim().min(1, "Each item needs an item type"),
   service: z.string().trim().min(1, "Each item needs a requested service"),
-  metal: z.string().trim().min(1, "Each item needs a metal"),
+  metal: z.string().trim().optional(),
   stone: z.string().trim().optional().default(""),
   description: z.string().trim().min(1, "Each item needs a description"),
 });
@@ -188,7 +188,7 @@ const jobItemSchema = z.object({
 const createJobSchema = z.object({
   clientId: z.string().uuid().nullable().optional(),
   fullName: z.string().trim().min(2, "Customer name is required"),
-  phone: z.string().trim().min(6, "Phone number is required"),
+  phone: z.string().trim().optional(),
   email: z.string().trim().email("Enter a valid email address").or(z.literal("")).optional(),
   postcode: z.string().trim().optional().default(""),
   items: z.array(jobItemSchema).min(1, "Add at least one item to this job"),

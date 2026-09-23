@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedEnquiriesRouteImport } from './routes/_authenticated/enquiries'
+import { Route as AuthenticatedNewBespokeRouteImport } from './routes/_authenticated/new-bespoke'
 import { Route as AuthenticatedNewJobRouteImport } from './routes/_authenticated/new-job'
 import { Route as AuthenticatedNewRepairRouteImport } from './routes/_authenticated/new-repair'
 import { Route as AuthenticatedOutlookRouteImport } from './routes/_authenticated/outlook'
@@ -50,6 +51,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedEnquiriesRoute = AuthenticatedEnquiriesRouteImport.update({
   id: '/enquiries',
   path: '/enquiries',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNewBespokeRoute = AuthenticatedNewBespokeRouteImport.update({
+  id: '/new-bespoke',
+  path: '/new-bespoke',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNewJobRoute = AuthenticatedNewJobRouteImport.update({
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/enquiries': typeof AuthenticatedEnquiriesRouteWithChildren
+  '/new-bespoke': typeof AuthenticatedNewBespokeRoute
   '/new-job': typeof AuthenticatedNewJobRoute
   '/new-repair': typeof AuthenticatedNewRepairRoute
   '/outlook': typeof AuthenticatedOutlookRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/new-bespoke': typeof AuthenticatedNewBespokeRoute
   '/new-job': typeof AuthenticatedNewJobRoute
   '/new-repair': typeof AuthenticatedNewRepairRoute
   '/outlook': typeof AuthenticatedOutlookRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/enquiries': typeof AuthenticatedEnquiriesRouteWithChildren
+  '/_authenticated/new-bespoke': typeof AuthenticatedNewBespokeRoute
   '/_authenticated/new-job': typeof AuthenticatedNewJobRoute
   '/_authenticated/new-repair': typeof AuthenticatedNewRepairRoute
   '/_authenticated/outlook': typeof AuthenticatedOutlookRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/enquiries'
+    | '/new-bespoke'
     | '/new-job'
     | '/new-repair'
     | '/outlook'
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
   to:
     | '/auth'
     | '/reset-password'
+    | '/new-bespoke'
     | '/new-job'
     | '/new-repair'
     | '/outlook'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/enquiries'
+    | '/_authenticated/new-bespoke'
     | '/_authenticated/new-job'
     | '/_authenticated/new-repair'
     | '/_authenticated/outlook'
@@ -280,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/enquiries'
       fullPath: '/enquiries'
       preLoaderRoute: typeof AuthenticatedEnquiriesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/new-bespoke': {
+      id: '/_authenticated/new-bespoke'
+      path: '/new-bespoke'
+      fullPath: '/new-bespoke'
+      preLoaderRoute: typeof AuthenticatedNewBespokeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/new-job': {
@@ -394,6 +413,7 @@ const AuthenticatedEnquiriesRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedEnquiriesRoute: typeof AuthenticatedEnquiriesRouteWithChildren
+  AuthenticatedNewBespokeRoute: typeof AuthenticatedNewBespokeRoute
   AuthenticatedNewJobRoute: typeof AuthenticatedNewJobRoute
   AuthenticatedNewRepairRoute: typeof AuthenticatedNewRepairRoute
   AuthenticatedOutlookRoute: typeof AuthenticatedOutlookRoute
@@ -410,6 +430,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEnquiriesRoute: AuthenticatedEnquiriesRouteWithChildren,
+  AuthenticatedNewBespokeRoute: AuthenticatedNewBespokeRoute,
   AuthenticatedNewJobRoute: AuthenticatedNewJobRoute,
   AuthenticatedNewRepairRoute: AuthenticatedNewRepairRoute,
   AuthenticatedOutlookRoute: AuthenticatedOutlookRoute,

@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  Archive,
   ArrowUpDown,
   BarChart3,
   Box,
@@ -83,6 +82,8 @@ const icons: Record<string, LucideIcon> = {
   quote: PoundSterling,
   received: Box,
   workshop: Wrench,
+  completed: Check,
+  collected: ShoppingBag,
   approval: MessageSquare,
   qc: Check,
   ready: ShoppingBag,
@@ -146,7 +147,6 @@ function JobCard({
 function JobsBoard() {
   const { data: jobs } = useSuspenseQuery(jobsQuery);
 
-  const [showCompleted, setShowCompleted] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<
     "dueDate" | "received" | "customer"
@@ -162,10 +162,6 @@ function JobsBoard() {
 
   const filteredJobs = jobs
     .filter((job) => {
-      if (!showCompleted && job.status === "COMPLETED") {
-        return false;
-      }
-
       if (
         statusFilter !== "all" &&
         job.status !== statusFilter
@@ -241,7 +237,6 @@ function JobsBoard() {
     <div className="w-full max-w-none">
       <PageHeader
         title="Job Status Board"
-        subtitle="Track and manage every job through the workshop"
         actions={
           <>
             <ToolButton onClick={() => setFilterOpen((open) => !open)}>
@@ -250,42 +245,34 @@ function JobsBoard() {
             </ToolButton>
 
             <ToolButton
-  onClick={() =>
-    setSortBy((current) =>
-      current === "dueDate"
-        ? "received"
-        : current === "received"
-          ? "customer"
-          : "dueDate",
-    )
-  }
->
-  <ArrowUpDown className="size-4 text-gold" />
-  Sort:{" "}
-  {sortBy === "dueDate"
-    ? "Due Date"
-    : sortBy === "received"
-      ? "Date Received"
-      : "Customer"}
-</ToolButton>
+              onClick={() =>
+                setSortBy((current) =>
+                  current === "dueDate"
+                    ? "received"
+                    : current === "received"
+                      ? "customer"
+                      : "dueDate",
+                )
+              }
+            >
+              <ArrowUpDown className="size-4 text-gold" />
+              Sort:{" "}
+              {sortBy === "dueDate"
+                ? "Due Date"
+                : sortBy === "received"
+                  ? "Date Received"
+                  : "Customer"}
+            </ToolButton>
 
             <ToolButton>
               <LayoutGrid className="size-4 text-gold" />
               View
             </ToolButton>
-
-           <ToolButton
-  primary={showCompleted}
-  onClick={() => setShowCompleted((current) => !current)}
->
-  <Archive className="size-4" />
-  {showCompleted ? "Hide Completed" : "View Completed"}
-</ToolButton>
           </>
         }
       />
 
-{filterOpen ? (
+      {filterOpen ? (
   <div className="glass mb-5 rounded-2xl p-5">
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       <label className="space-y-2">
@@ -382,7 +369,7 @@ function JobsBoard() {
 ) : null}
 
       <div className="overflow-x-auto pb-4">
-        <div className="grid min-w-[1680px] grid-cols-6 gap-6">
+        <div className="grid min-w-[1200px] grid-cols-4 gap-6">
           {boardColumns.map((col) => {
             const list = filteredJobs.filter((job) =>
               (col.statuses as readonly string[]).includes(job.status),
@@ -454,50 +441,7 @@ function JobsBoard() {
         </div>
       </div>
 
-      {/* Workflow Overview */}
-      <section className="glass mt-5 flex min-w-0 items-center gap-5 rounded-xl p-4">
-        <BarChart3 className="size-8 shrink-0 text-gold" />
-
-        <div className="mr-auto shrink-0">
-          <h2 className="font-display text-lg">
-            Workflow Overview
-          </h2>
-
-          <p className="text-xs text-muted-foreground">
-            Total jobs in system
-          </p>
-        </div>
-
-        <div className="flex flex-1 gap-3 overflow-x-auto">
-          {boardColumns.map((col) => (
-            <div
-              key={col.key}
-              className="glass-inset flex min-w-[145px] items-center gap-3 rounded-lg px-4 py-2.5"
-            >
-              <span
-                className="size-2.5 shrink-0 rounded-full"
-                style={{ background: col.color }}
-              />
-
-              <div>
-                <div className="text-sm">
-                  {
-                    jobs.filter((j) =>
-                      (col.statuses as readonly string[]).includes(
-                        j.status,
-                      ),
-                    ).length
-                  }
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  {col.label}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
+
   );
 }

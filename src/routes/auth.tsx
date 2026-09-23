@@ -2,8 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, Lock, Mail, ShieldCheck, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { staffSignUp } from "@/lib/auth.functions";
+import { staffSignUp, verifyInviteCode } from "@/lib/auth.functions";
 import { Logo } from "@/components/app-shell";
+import type { AppRole } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/auth")({
 const field =
   "h-11 w-full rounded-xl border border-border bg-[var(--navy-deep)]/50 px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-gold/60";
 
-type Mode = "signin" | "signup" | "forgot";
+type Mode = "signin" | "referral" | "signup" | "forgot";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ function AuthPage() {
   const [confirm, setConfirm] = useState("");
   const [fullName, setFullName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [inviteRole, setInviteRole] = useState<AppRole | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -80,9 +82,28 @@ function AuthPage() {
       return setNotice("If that email is registered, a reset link is on its way.");
     }
 
+    if (mode === "referral") {
+      if (!inviteCode.trim()) return setError("Enter your referral code.");
+      setBusy(true);
+      try {
+        const result = await verifyInviteCode({
+          data: { inviteCode: inviteCode.trim() },
+        });
+        setInviteRole(result.role);
+        setError(null);
+        setNotice(null);
+        setMode("signup");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not verify that referral code.");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
     if (mode === "signup") {
       if (!fullName.trim() || !email.trim() || !password || !inviteCode.trim()) {
-        return setError("All fields, including your referral code, are required.");
+        return setError("All account fields are required.");
       }
       if (password.length < 8) return setError("Password must be at least 8 characters.");
       if (password !== confirm) return setError("Those passwords do not match.");
@@ -96,16 +117,11 @@ function AuthPage() {
             inviteCode: inviteCode.trim(),
           },
         });
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (signInError) {
-          setBusy(false);
-          switchMode("signin");
-          return setNotice("Account created. Please sign in.");
-        }
-        navigate({ to: "/", replace: true });
+        setBusy(false);
+        switchMode("signin");
+        return setNotice(
+          "Account created. Please check your email and verify your address before signing in.",
+        );
       } catch (err) {
         setBusy(false);
         setError(err instanceof Error ? err.message : "Could not create that account.");
@@ -157,17 +173,21 @@ function AuthPage() {
             <div>
               <h1 className="font-display text-3xl leading-none">
                 {mode === "signup"
-                  ? "Staff Sign Up"
-                  : mode === "forgot"
-                    ? "Reset Password"
-                    : "Staff Sign In"}
+                  ? "Create Staff Account"
+                  : mode === "referral"
+                    ? "Enter Referral Code"
+                    : mode === "forgot"
+                      ? "Reset Password"
+                      : "Staff Sign In"}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 {mode === "signup"
-                  ? "A valid referral code from an administrator is required."
-                  : mode === "forgot"
-                    ? "We will email you a secure link to set a new password."
-                    : "Secure access to the Marvellous Jewellers CRM."}
+                  ? "Complete your staff account using your approved invitation."
+                  : mode === "referral"
+                    ? "Enter the referral code provided by a Marvellous administrator."
+                    : mode === "forgot"
+                      ? "We will email you a secure link to set a new password."
+                      : "Secure access to the Marvellous Jewellers CRM."}
               </p>
             </div>
           </div>
@@ -187,6 +207,7 @@ function AuthPage() {
               </label>
             ) : null}
 
+            {mode !== "referral" ? (
             <label className="block text-sm">
               <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
                 Work Email
@@ -199,8 +220,9 @@ function AuthPage() {
                 autoComplete="email"
               />
             </label>
+            ) : null}
 
-            {mode !== "forgot" ? (
+            {mode !== "forgot" && mode !== "referral" ? (
               <label className="block text-sm">
                 <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
                   Password
@@ -215,8 +237,33 @@ function AuthPage() {
               </label>
             ) : null}
 
+            {mode === "referral" ? (
+              <label className="block text-sm">
+                <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
+                  Referral Code
+                </span>
+                <input
+                  className={field}
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  placeholder="MJ-XXX-XXXXXX"
+                  autoComplete="off"
+                />
+              </label>
+            ) : null}
+
             {mode === "signup" ? (
               <>
+                <label className="block text-sm">
+                  <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
+                    Access Level
+                  </span>
+                  <input
+                    className={field}
+                    value={inviteRole ? roleLabels[inviteRole] : ""}
+                    readOnly
+                  />
+                </label>
                 <label className="block text-sm">
                   <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
                     Confirm Password
@@ -227,17 +274,6 @@ function AuthPage() {
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     autoComplete="new-password"
-                  />
-                </label>
-                <label className="block text-sm">
-                  <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
-                    Referral Code
-                  </span>
-                  <input
-                    className={field}
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                    placeholder="MJ-XXX-XXXXXX"
                   />
                 </label>
               </>
@@ -265,9 +301,11 @@ function AuthPage() {
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
               {mode === "signup"
                 ? "Create Account"
-                : mode === "forgot"
-                  ? "Send Reset Link"
-                  : "Sign In"}
+                : mode === "referral"
+                  ? "Verify Referral"
+                  : mode === "forgot"
+                    ? "Send Reset Link"
+                    : "Sign In"}
             </button>
           </form>
 
@@ -280,10 +318,17 @@ function AuthPage() {
                 >
                   Forgot password?
                 </button>
-                <button className="text-gold" onClick={() => switchMode("signup")}>
-                  Create account
+                <button className="text-gold" onClick={() => switchMode("referral")}>
+                  Have a referral code?
                 </button>
               </>
+            ) : mode === "signup" ? (
+              <button
+                className="text-gold"
+                onClick={() => switchMode("referral")}
+              >
+                Back to referral code
+              </button>
             ) : (
               <button
                 className="text-gold"

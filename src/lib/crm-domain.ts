@@ -123,86 +123,59 @@ export const allowedTransitions: Record<JobStatus, JobStatus[]> = {
   ON_HOLD: ["AWAITING_WORKSHOP", "RECEIVED", "IN_PROGRESS", "CANCELLED"],
 };
 
-/** Workshop board grouping (Received / In Progress / Quality Check / Ready). */
+/** Workshop board grouping (Received / Completed). */
 export const workshopColumns = [
   {
     key: "received",
     title: "Received",
-    blurb: "Newly received jobs",
+    blurb: "Jobs received and waiting to be worked on",
     color: "var(--status-blue)",
     statuses: ["RECEIVED", "INSPECTION"] as JobStatus[],
   },
   {
-    key: "progress",
-    title: "In Progress",
-    blurb: "Being worked on",
+    key: "completed",
+    title: "Completed",
+    blurb: "Workshop work completed",
     color: "var(--status-green)",
-    statuses: ["IN_PROGRESS", "WAITING_FOR_PARTS", "RETURNED_TO_WORKSHOP"] as JobStatus[],
-  },
-  {
-    key: "qc",
-    title: "Quality Check",
-    blurb: "Final checks before completion",
-    color: "var(--status-violet)",
-    statuses: ["AWAITING_QC"] as JobStatus[],
-  },
-  {
-    key: "ready",
-    title: "Ready",
-    blurb: "Collection pending",
-    color: "var(--status-amber)",
-    statuses: ["READY_FOR_COLLECTION"] as JobStatus[],
+    statuses: ["AWAITING_QC", "READY_FOR_COLLECTION", "COMPLETED"] as JobStatus[],
   },
 ] as const;
 
-/** Jobs board grouping (five approved columns). */
+/** Jobs board grouping (Received / Workshop / Completed / Collected). */
 export const boardColumns = [
-  {
-    key: "quote",
-    label: "To Quote",
-    blurb: "Bespoke and quote-only enquiries",
-    color: "var(--status-violet)",
-    statuses: ["TO_QUOTE"] as JobStatus[],
-  },
   {
     key: "received",
     label: "Received",
-    blurb: "New jobs awaiting workshop",
+    blurb: "New jobs received",
     color: "var(--status-blue)",
-    statuses: ["NEW", "AWAITING_WORKSHOP", "RECEIVED", "INSPECTION"] as JobStatus[],
+    statuses: ["NEW", "TO_QUOTE", "AWAITING_WORKSHOP", "RECEIVED", "INSPECTION"] as JobStatus[],
   },
   {
     key: "workshop",
-    label: "In Workshop",
+    label: "Workshop",
     blurb: "Currently being worked on",
     color: "var(--status-amber)",
     statuses: [
       "IN_PROGRESS",
       "WAITING_FOR_PARTS",
       "RETURNED_TO_WORKSHOP",
+      "AWAITING_APPROVAL",
       "ON_HOLD",
     ] as JobStatus[],
   },
   {
-    key: "approval",
-    label: "Awaiting Approval",
-    blurb: "Waiting for customer approval",
-    color: "var(--status-violet)",
-    statuses: ["AWAITING_APPROVAL"] as JobStatus[],
-  },
-  {
-    key: "qc",
-    label: "Quality Control",
-    blurb: "Final checks before collection",
+    key: "completed",
+    label: "Completed",
+    blurb: "Workshop work completed",
     color: "var(--status-green)",
-    statuses: ["AWAITING_QC"] as JobStatus[],
+    statuses: ["AWAITING_QC", "READY_FOR_COLLECTION", "COMPLETED"] as JobStatus[],
   },
   {
-    key: "ready",
-    label: "Ready for Collection",
-    blurb: "Complete and awaiting collection",
-    color: "var(--status-amber)",
-    statuses: ["READY_FOR_COLLECTION"] as JobStatus[],
+    key: "collected",
+    label: "Collected",
+    blurb: "Collected by customer",
+    color: "var(--status-violet)",
+    statuses: ["COLLECTED"] as JobStatus[],
   },
 ] as const;
 

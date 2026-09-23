@@ -45,76 +45,38 @@ export function Logo() {
 
 function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [expanded, setExpanded] = useState(false);
 
   return (
     <aside
-      onMouseEnter={() => setExpanded(true)}
-      onMouseLeave={() => setExpanded(false)}
-      className={
-        "hidden shrink-0 flex-col justify-between bg-[var(--sidebar)] px-3 py-6 shadow-[1px_0_0_0_oklch(0.9755_0.0045_258.3/0.05)] backdrop-blur-2xl transition-[width] duration-300 ease-out lg:flex " +
-        (expanded ? "w-64" : "w-20")
-      }
+      className="hidden fixed left-5 top-1/2 z-50 -translate-y-1/2 flex-col items-center rounded-2xl border border-white/15 bg-white/[0.045] px-2.5 py-3 shadow-[0_20px_60px_oklch(0.02_0.02_245/0.28)] backdrop-blur-xl lg:flex"
     >
-      <div>
-        <div
-          className={
-            "flex items-center transition-all duration-300 " +
-            (expanded ? "justify-start gap-3 px-1" : "justify-center")
-          }
-        >
-          <Logo />
+      <nav className="flex flex-col items-center gap-2">
+        {nav.map((item) => {
+          const active =
+            item.to === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.to);
 
-          <span
-            className={
-              "whitespace-nowrap text-sm font-medium tracking-[0.28em] text-gold transition-all duration-300 " +
-              (expanded
-                ? "translate-x-0 opacity-100"
-                : "pointer-events-none absolute -translate-x-2 opacity-0")
-            }
-          >
-            MARVELLOUS
-          </span>
-        </div>
-
-        <nav className="mt-8 space-y-2">
-          {nav.map((item) => {
-            const active =
-              item.to === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.to);
-
-            return (
+          return (
+            <div key={item.to} className="relative size-11">
               <Link
-                key={item.to}
                 to={item.to}
-                title={item.label}
                 aria-label={item.label}
                 className={
-                  "relative flex w-full items-center rounded-xl p-3 transition-all duration-300 " +
-                  (expanded ? "justify-start gap-4" : "justify-center") +
-                  " " +
+                  "group absolute inset-0 flex size-11 items-center justify-center rounded-xl border transition-[background-color,border-color,box-shadow] duration-150 " +
                   (active
-                    ? "glass-gold text-foreground"
-                    : "text-muted-foreground hover:bg-accent/40 hover:text-foreground")
+                    ? "border-gold/30 bg-gold/10 text-foreground shadow-[0_8px_24px_oklch(0.75_0.12_85/0.08)]"
+                    : "border-transparent bg-transparent text-muted-foreground hover:border-white/12 hover:bg-white/[0.07]")
                 }
               >
-                <span className="flex w-8 shrink-0 items-center justify-center">
-                  <item.icon
-                    className={
-                      "size-5 " + (active ? "text-gold" : "text-gold/70")
-                    }
-                  />
-                </span>
-
-                <span
+                <item.icon
                   className={
-                    "whitespace-nowrap text-sm font-medium transition-all duration-200 overflow-hidden " +
-                    (expanded
-                      ? "max-w-[160px] translate-x-0 opacity-100"
-                      : "max-w-0 pointer-events-none -translate-x-2 opacity-0")
+                    "size-5 transition-transform duration-150 group-hover:scale-105 " +
+                    (active ? "text-gold" : "text-gold/70")
                   }
-                >
+                />
+
+                <span className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 translate-x-1 whitespace-nowrap rounded-lg border border-white/15 bg-[oklch(0.10_0.03_245/0.82)] px-3 py-1.5 text-sm font-medium text-foreground opacity-0 shadow-[0_10px_25px_oklch(0.02_0.02_245/0.3)] backdrop-blur-xl transition-[opacity,transform] duration-150 group-hover:translate-x-0 group-hover:opacity-100">
                   {item.label}
                 </span>
 
@@ -124,25 +86,17 @@ function Sidebar() {
                   </span>
                 ) : null}
               </Link>
-            );
-          })}
-        </nav>
-      </div>
+            </div>
+          );
+        })}
+      </nav>
 
-      <SidebarAccount />
+      <div className="mt-3 border-t border-white/10 pt-3">
+        <SidebarAccount />
+      </div>
     </aside>
   );
 }
-
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 function SidebarAccount() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -163,7 +117,7 @@ function SidebarAccount() {
     <div className="glass-tile rounded-2xl p-2">
       <div className="flex justify-center">
         <div className="grid size-9 place-items-center rounded-full border border-gold/30 text-xs font-semibold text-gold">
-          {data ? initials(data.fullName || data.email || "MJ") : "MJ"}
+          {data ? (data.fullName || data.email || "MJ").split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() : "MJ"}
         </div>
       </div>
 
@@ -223,10 +177,14 @@ function TopBar() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="app-bg flex min-h-screen w-full">
+    <div className="app-bg relative flex min-h-screen w-full">
+      <div className="absolute left-5 top-5 z-50 [&_img]:size-16">
+        <Logo />
+      </div>
+
       <Sidebar />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-20">
         <TopBar />
 
         <main className="flex-1 px-4 pb-10 pt-6 lg:px-8">{children}</main>

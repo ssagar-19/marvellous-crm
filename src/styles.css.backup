@@ -107,8 +107,8 @@
   --glass-blur: blur(22px) saturate(115%);
   --glass-tint: linear-gradient(
     155deg,
-    oklch(0.3513 0.065 239.2 / 0.16),
-    oklch(0.2925 0.0516 240.2 / 0.10)
+    oklch(0.3513 0.065 239.2 / 0.5),
+    oklch(0.2925 0.0516 240.2 / 0.38)
   );
   --glass-shadow:
     0 24px 60px -30px oklch(0.12 0.03 240 / 0.85),
@@ -153,7 +153,28 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: #143F59;
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 82% 8%,
+      oklch(0.43 0.12 235 / 0.72),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 65% 50% at 12% 78%,
+      oklch(0.31 0.11 225 / 0.78),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 45% 75% at 48% 100%,
+      oklch(0.28 0.09 245 / 0.65),
+      transparent 72%
+    ),
+    linear-gradient(
+      135deg,
+      oklch(0.16 0.045 245),
+      oklch(0.23 0.075 238) 45%,
+      oklch(0.13 0.04 250) 100%
+    );
 }
 
 .app-bg::before {
@@ -443,14 +464,3 @@
 @utility jewel-watch { & img { left: 0; top: -100%; } }
 @utility jewel-bracelet { & img { left: -100%; top: -100%; } }
 @utility jewel-pendant { & img { left: -200%; top: -100%; } }
-
-/* Remove native number input spinner arrows */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
