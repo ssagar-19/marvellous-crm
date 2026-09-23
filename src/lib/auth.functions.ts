@@ -2,13 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export const APP_ROLES = ["admin", "management", "workshop_staff"] as const;
+export const APP_ROLES = ["admin"] as const;
 export type AppRole = (typeof APP_ROLES)[number];
 
 export const roleLabels: Record<AppRole, string> = {
   admin: "Admin",
-  management: "Management",
-  workshop_staff: "Workshop Staff",
 };
 
 export type StaffAccess = {
@@ -29,7 +27,12 @@ const signUpSchema = z.object({
 
 export const verifyInviteCode = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
-    z.object({ inviteCode: z.string().trim().min(3) }).parse(d),
+    z
+      .object({
+        inviteCode: z.string().trim().min(3),
+        email: z.string().trim().email("Enter a valid work email"),
+      })
+      .parse(d),
   )
   .handler(async ({ data }): Promise<{ ok: true; role: AppRole }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -37,7 +40,7 @@ export const verifyInviteCode = createServerFn({ method: "POST" })
 
     const { data: invite, error } = await supabaseAdmin
       .from("marvellous_invite_codes")
-      .select("role, expires_at, revoked_at, used_at")
+      .select("role, authorised_email, expires_at, revoked_at, used_at")
       .eq("code", code)
       .maybeSingle();
 
@@ -46,6 +49,9 @@ export const verifyInviteCode = createServerFn({ method: "POST" })
     if (invite.used_at) throw new Error("That referral code has already been used.");
     if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
       throw new Error("That referral code has expired.");
+    }
+    if (invite.authorised_email.toLowerCase() !== data.email.trim().toLowerCase()) {
+      throw new Error("That referral code is not authorised for this email address.");
     }
 
     return { ok: true, role: invite.role as AppRole };
@@ -63,7 +69,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
 
     const { data: invite, error: inviteError } = await supabaseAdmin
       .from("marvellous_invite_codes")
-      .select("id, role, expires_at, revoked_at, used_at")
+      .select("id, role, authorised_email, expires_at, revoked_at, used_at")
       .eq("code", code)
       .maybeSingle();
     if (inviteError) throw new Error("Could not verify that referral code.");
@@ -72,6 +78,9 @@ export const staffSignUp = createServerFn({ method: "POST" })
     if (invite.used_at) throw new Error("That referral code has already been used.");
     if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
       throw new Error("That referral code has expired.");
+    }
+    if (invite.authorised_email.toLowerCase() !== data.email.trim().toLowerCase()) {
+      throw new Error("That referral code is not authorised for this email address.");
     }
 
     const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -104,11 +113,18 @@ export const staffSignUp = createServerFn({ method: "POST" })
       throw new Error("Could not assign the staff role.");
     }
 
-    await supabaseAdmin
+    const { data: claimedInvite, error: claimError } = await supabaseAdmin
       .from("marvellous_invite_codes")
       .update({ used_by: userId, used_at: new Date().toISOString() })
       .eq("id", invite.id)
-      .is("used_at", null);
+      .is("used_at", null)
+      .select("id")
+      .maybeSingle();
+
+    if (claimError || !claimedInvite) {
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      throw new Error("That referral code has already been used.");
+    }
 
     return { ok: true, role: invite.role as AppRole };
   });
@@ -208,26 +224,25 @@ export const listInviteCodes = createServerFn({ method: "GET" })
     }));
   });
 
-function randomCode(role: AppRole) {
-  const prefix = role === "admin" ? "ADM" : role === "management" ? "MGT" : "WKS";
+function randomCode() {
   const body = Array.from({ length: 6 }, () =>
     "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".charAt(Math.floor(Math.random() * 32)),
   ).join("");
-  return `MJ-${prefix}-${body}`;
+  return `MJ-${body}`;
 }
 
 export const createInviteCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ role: z.enum(APP_ROLES) }).parse(d))
-  .handler(async ({ data, context }): Promise<{ code: string }> => {
+  .handler(async ({ context }): Promise<{ code: string }> => {
     await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const code = randomCode(data.role);
+    const code = randomCode();
     const { error } = await supabaseAdmin.from("marvellous_invite_codes").insert({
       code,
-      role: data.role,
+      role: "admin",
+      authorised_email: "hello@marvellousjewellers.com",
       created_by: context.userId,
-      expires_at: new Date(Date.now() + 14 * 24 * 3600 * 1000).toISOString(),
+      expires_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
     });
     if (error) throw new Error(error.message);
     return { code };

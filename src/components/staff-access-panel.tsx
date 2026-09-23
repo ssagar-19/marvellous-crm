@@ -2,11 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Copy, Link2, Loader2, ShieldAlert, Users } from "lucide-react";
 import {
-  APP_ROLES,
   createInviteCode,
   revokeInviteCode,
-  roleLabels,
-  type AppRole,
 } from "@/lib/auth.functions";
 import { inviteCodesQuery, myAccessQuery, staffAccountsQuery } from "@/lib/auth-queries";
 
@@ -112,12 +109,11 @@ function StaffList() {
 function InviteCodes() {
   const queryClient = useQueryClient();
   const { data, isPending, isError } = useQuery(inviteCodesQuery);
-  const [role, setRole] = useState<AppRole>("workshop_staff");
   const [copied, setCopied] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
-    mutationFn: () => createInviteCode({ data: { role } }),
+    mutationFn: () => createInviteCode({ data: {} }),
     onSuccess: () => {
       setError(null);
       queryClient.invalidateQueries({ queryKey: inviteCodesQuery.queryKey });
@@ -146,22 +142,6 @@ function InviteCodes() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-end gap-3">
-        <label className="block text-sm">
-          <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
-            Role
-          </span>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as AppRole)}
-            className="h-11 rounded-xl border border-border bg-[var(--navy-deep)]/50 px-4 text-sm outline-none focus:border-gold/60"
-          >
-            {APP_ROLES.map((r) => (
-              <option key={r} value={r}>
-                {roleLabels[r]}
-              </option>
-            ))}
-          </select>
-        </label>
         <button
           onClick={() => create.mutate()}
           disabled={create.isPending}

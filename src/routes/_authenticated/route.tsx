@@ -25,9 +25,21 @@ export const Route = createFileRoute('/_authenticated')({
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser()
+
     if (error || !data.user) {
       throw redirect({ to: SIGN_IN_ROUTE })
     }
+
+    const { data: assurance, error: assuranceError } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+
+    if (
+      assuranceError ||
+      assurance.currentLevel !== "aal2"
+    ) {
+      throw redirect({ to: SIGN_IN_ROUTE })
+    }
+
     return { user: data.user }
   },
   component: () => (

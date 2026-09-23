@@ -31,7 +31,7 @@ export const Route = createFileRoute("/auth")({
 const field =
   "h-11 w-full rounded-xl border border-border bg-[var(--navy-deep)]/50 px-4 text-sm outline-none placeholder:text-muted-foreground focus:border-gold/60";
 
-type Mode = "signin" | "referral" | "signup" | "forgot";
+type Mode = "signin" | "referral" | "signup" | "forgot" | "mfa";
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -47,14 +47,40 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [inviteRole, setInviteRole] = useState<AppRole | null>(null);
+  const [mfaFactorId, setMfaFactorId] = useState("");
+  const [mfaChallengeId, setMfaChallengeId] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaQrCode, setMfaQrCode] = useState("");
+  const [mfaSetup, setMfaSetup] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    supabase.auth.getUser().then(({ data }) => {
+
+    async function checkSession() {
+      const { data, error } = await supabase.auth.getUser();
+
       if (cancelled) return;
-      if (data.user) navigate({ to: "/", replace: true });
-      else setChecking(false);
-    });
+
+      if (error || !data.user) {
+        setChecking(false);
+        return;
+      }
+
+      const { data: assurance } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+      if (cancelled) return;
+
+      if (assurance?.currentLevel === "aal2") {
+        navigate({ to: "/", replace: true });
+        return;
+      }
+
+      setChecking(false);
+    }
+
+    void checkSession();
+
     return () => {
       cancelled = true;
     };
@@ -87,7 +113,7 @@ function AuthPage() {
       setBusy(true);
       try {
         const result = await verifyInviteCode({
-          data: { inviteCode: inviteCode.trim() },
+          data: { inviteCode: inviteCode.trim(), email: email.trim() },
         });
         setInviteRole(result.role);
         setError(null);
@@ -143,6 +169,92 @@ function AuthPage() {
           : err.message,
       );
     }
+    const { data: assurance, error: assuranceError } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (assuranceError) {
+      return setError(assuranceError.message);
+    }
+
+    if (assurance.currentLevel === "aal2") {
+      navigate({ to: "/", replace: true });
+      return;
+    }
+
+    const { data: factors, error: factorsError } =
+      await supabase.auth.mfa.listFactors();
+
+    if (factorsError) {
+      return setError(factorsError.message);
+    }
+
+    const totpFactor = factors.all.find(
+      (factor) => factor.factor_type === "totp",
+    );
+
+    let factorId = totpFactor?.id;
+
+    if (!totpFactor) {
+      const { data: enrolled, error: enrollError } =
+        await supabase.auth.mfa.enroll({
+          factorType: "totp",
+          friendlyName: "Marvellous Jewellers",
+        });
+
+      if (enrollError) {
+        return setError(enrollError.message);
+      }
+
+      factorId = enrolled.id;
+      setMfaQrCode(enrolled.totp.qr_code);
+      setMfaSetup(true);
+    } else {
+      setMfaQrCode("");
+      setMfaSetup(totpFactor.status !== "verified");
+    }
+
+    const { data: challenge, error: challengeError } =
+      await supabase.auth.mfa.challenge({
+        factorId,
+      });
+
+    if (challengeError) {
+      return setError(challengeError.message);
+    }
+
+    setMfaFactorId(factorId);
+    setMfaChallengeId(challenge.id);
+    setMfaCode("");
+    setMode("mfa");
+  }
+
+  async function verifyMfaCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setNotice(null);
+
+    if (!mfaCode.trim()) {
+      return setError("Enter the verification code.");
+    }
+
+    if (!mfaFactorId || !mfaChallengeId) {
+      return setError("Your security verification session has expired. Please sign in again.");
+    }
+
+    setBusy(true);
+
+    const { error: verifyError } = await supabase.auth.mfa.verify({
+      factorId: mfaFactorId,
+      challengeId: mfaChallengeId,
+      code: mfaCode.trim(),
+    });
+
+    setBusy(false);
+
+    if (verifyError) {
+      return setError("That verification code was not accepted. Please try again.");
+    }
+
     navigate({ to: "/", replace: true });
   }
 
@@ -192,6 +304,86 @@ function AuthPage() {
             </div>
           </div>
 
+            {mode === "mfa" ? (
+              <form className="mt-6 space-y-4" onSubmit={verifyMfaCode} noValidate>
+                <div className="rounded-2xl border border-gold/20 bg-[var(--navy-deep)]/30 p-5 text-center">
+                  <ShieldCheck className="mx-auto size-8 text-gold" strokeWidth={1.5} />
+                  {mfaSetup && mfaQrCode ? (
+                    <>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Scan this QR code with Apple Passwords on your iPhone.
+                      </p>
+
+                      <div className="mx-auto mt-5 flex size-48 items-center justify-center rounded-2xl bg-white p-3">
+                        <img
+                          src={mfaQrCode}
+                          alt="Marvellous Jewellers MFA setup QR code"
+                          className="size-full"
+                        />
+                      </div>
+
+                      <p className="mt-4 text-xs text-muted-foreground">
+                        After scanning, Apple Passwords will generate a
+                        six-digit verification code for Marvellous Jewellers.
+                      </p>
+                    </>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      Enter the six-digit verification code from Apple Passwords.
+                    </p>
+                  )}
+                </div>
+
+                <label className="block text-sm">
+                  <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
+                    Verification Code
+                  </span>
+                  <input
+                    className={`${field} text-center text-lg tracking-[0.35em]`}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={mfaCode}
+                    onChange={(e) =>
+                      setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    placeholder="000000"
+                    maxLength={6}
+                    autoFocus
+                  />
+                </label>
+
+                {error ? (
+                  <p
+                    role="alert"
+                    className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                  >
+                    {error}
+                  </p>
+                ) : null}
+
+                <button
+                  type="submit"
+                  disabled={busy || mfaCode.length < 6}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 text-sm font-medium text-[var(--navy-deep)] transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {busy ? <Loader2 className="size-4 animate-spin" /> : null}
+                  Verify & Continue
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMfaCode("");
+                    setError(null);
+                    setMode("signin");
+                    void supabase.auth.signOut();
+                  }}
+                  className="w-full text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Cancel and return to sign in
+                </button>
+              </form>
+            ) : (
           <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
             {mode === "signup" ? (
               <label className="block text-sm">
@@ -308,6 +500,7 @@ function AuthPage() {
                     : "Sign In"}
             </button>
           </form>
+            )}
 
           <div className="mt-5 flex flex-wrap justify-between gap-3 text-sm">
             {mode === "signin" ? (
