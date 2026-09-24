@@ -16,7 +16,7 @@ import {
   Settings as SettingsIcon,
   LogOut,
   AlertTriangle,
-  Loader2,
+  
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -263,8 +263,62 @@ export function ToolButton({
 
 export function PanelLoading({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="glass flex items-center gap-3 rounded-2xl p-6 text-sm text-muted-foreground">
-      <Loader2 className="size-4 animate-spin text-gold" /> {label}
+      <div className="w-full max-w-none animate-pulse-soft">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div className="space-y-3">
+            <div className="skeleton-shimmer h-4 w-44 rounded-full" />
+            <div className="skeleton-shimmer h-12 w-80 rounded-xl" />
+            <div className="skeleton-shimmer h-4 w-64 rounded-full" />
+          </div>
+
+          <div className="skeleton-shimmer h-11 w-32 rounded-xl" />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="glass min-h-24 rounded-2xl px-5 py-4"
+            >
+              <div className="flex items-center gap-4">
+                <div className="skeleton-shimmer size-11 shrink-0 rounded-full" />
+                <div className="space-y-2">
+                  <div className="skeleton-shimmer h-3 w-20 rounded-full" />
+                  <div className="skeleton-shimmer h-8 w-10 rounded-lg" />
+                </div>
+                <div className="skeleton-shimmer ml-auto h-4 w-4 rounded-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="glass mt-6 rounded-2xl p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="skeleton-shimmer size-9 rounded-full" />
+              <div className="space-y-2">
+                <div className="skeleton-shimmer h-6 w-32 rounded-lg" />
+                <div className="skeleton-shimmer h-3 w-52 rounded-full" />
+              </div>
+            </div>
+
+            <div className="skeleton-shimmer h-4 w-14 rounded-full" />
+          </div>
+
+          <div className="mt-5 space-y-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                key={index}
+                className="skeleton-shimmer h-12 w-full rounded-2xl"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  return (
+    <div className="glass rounded-2xl p-6">
+      <div className="skeleton-shimmer h-5 w-40 rounded-full" />
     </div>
   );
 }

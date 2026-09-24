@@ -6,6 +6,7 @@ import {
   ArrowLeft, User, Gem, FileText, Image as ImageIcon, MessageSquare, Search,
   Barcode, History, Zap, Save, CheckCircle2, Trash2, Info, Lock, Plus, Loader2,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { createJob, searchClients } from "@/lib/crm.functions";
 import { JOB_PRIORITIES, priorityLabels, type ClientDTO } from "@/lib/crm-domain";
 
@@ -256,8 +257,33 @@ function NewJob() {
   const [savedDraft, setSavedDraft] = useState<string | null>(null);
 
   return (
-    <div>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.12,
+            delayChildren: 0.08,
+          },
+        },
+      }}
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 8 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+              duration: 0.5,
+              ease: [0.22, 1, 0.36, 1],
+            },
+          },
+        }}
+        className="mb-6 flex flex-wrap items-end justify-between gap-4"
+      >
         <div className="flex items-center gap-4">
           <div>
             <h1 className="font-display text-4xl leading-none">Create New Job</h1>
@@ -265,7 +291,7 @@ function NewJob() {
           </div>
         </div>
         <Link to="/jobs" className="glass flex h-11 items-center gap-2 rounded-xl px-4 text-sm"><ArrowLeft className="size-4 text-gold" /> Back</Link>
-      </div>
+      </motion.div>
 
       {errors.length > 0 ? (
         <div className="glass mb-5 rounded-2xl border border-destructive/40 p-4 text-sm text-destructive" role="alert">
@@ -276,7 +302,13 @@ function NewJob() {
         <div className="glass-gold mb-5 rounded-2xl p-4 text-sm text-gold">Draft saved as {savedDraft}.</div>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+      <motion.div
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.07 } },
+        }}
+        className="grid gap-5 lg:grid-cols-[1.6fr_1fr]"
+      >
         <div className="space-y-5">
           <Card
             step="1"
@@ -494,7 +526,7 @@ function NewJob() {
             </ol>
           </Card>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

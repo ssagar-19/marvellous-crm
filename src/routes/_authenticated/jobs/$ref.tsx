@@ -7,6 +7,7 @@ import {
   Plus, Printer, Check, Wrench, PoundSterling, User, Calendar, CircleCheck, Loader2, Upload,
 } from "lucide-react";
 import { PanelError, PanelLoading } from "@/components/app-shell";
+import { motion } from "motion/react";
 
 import { recordJobQuote, updateJobLocation, updateJobStatus } from "@/lib/crm.functions";
 import {
@@ -44,14 +45,27 @@ export const Route = createFileRoute("/_authenticated/jobs/$ref")({
 
 function Panel({ title, icon: Icon, action, children }: { title: string; icon: React.ElementType; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="glass rounded-2xl p-5">
+    <motion.section
+      variants={{
+        hidden: { opacity: 0, y: 8 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: {
+            duration: 0.45,
+            ease: [0.22, 1, 0.36, 1],
+          },
+        },
+      }}
+      className="glass rounded-2xl p-5"
+    >
       <div className="flex items-center gap-3">
         <span className="grid size-9 place-items-center rounded-lg border border-gold/30 bg-gold/10"><Icon className="size-4 text-gold" /></span>
         <h2 className="font-display text-xl">{title}</h2>
         {action ? <div className="ml-auto">{action}</div> : null}
       </div>
       <div className="mt-4">{children}</div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -104,8 +118,34 @@ function JobDetail() {
   const awaitingQuote = job.status === "TO_QUOTE";
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.12,
+            delayChildren: 0.08,
+          },
+        },
+      }}
+      className="space-y-5"
+    >
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 8 },
+          visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+              duration: 0.5,
+              ease: [0.22, 1, 0.36, 1],
+            },
+          },
+        }}
+        className="flex flex-wrap items-center justify-between gap-3"
+      >
         <Link to="/jobs" className="glass flex h-11 items-center gap-2 rounded-xl px-4 text-sm">
           <ArrowLeft className="size-4 text-gold" /> Back to Jobs
         </Link>
@@ -122,7 +162,7 @@ function JobDetail() {
           </select>
           <button className="glass grid size-11 place-items-center rounded-xl"><MoreHorizontal className="size-4 text-gold" /></button>
         </div>
-      </div>
+      </motion.div>
 
       {error ? <PanelError title="Could not update this job" message={error} /> : null}
 
@@ -160,7 +200,17 @@ function JobDetail() {
             const done = currentStage >= 0 && i < currentStage;
             const current = i === currentStage;
             return (
-              <div key={s.label} className="relative flex-1 text-center">
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: i * 0.07,
+                  duration: 0.4,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="relative flex-1 text-center"
+              >
                 {i < progressStages.length - 1 ? (
                   <span className="absolute left-1/2 top-4 h-px w-full"
                     style={{ background: done || current ? "var(--gold)" : "color-mix(in oklab, var(--gold) 20%, transparent)" }} />
@@ -171,7 +221,7 @@ function JobDetail() {
                 </span>
                 <div className="mt-2 text-sm">{s.label}</div>
                 <div className="text-xs text-muted-foreground">{current ? "Current stage" : ""}</div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -324,6 +374,6 @@ function JobDetail() {
           </Panel>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

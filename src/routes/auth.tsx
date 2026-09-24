@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "motion/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check, Loader2, Lock, Mail, ShieldCheck, UserPlus } from "lucide-react";
@@ -38,6 +39,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("signin");
   const [checking, setChecking] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -53,8 +55,26 @@ function AuthPage() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaQrCode, setMfaQrCode] = useState("");
   const [mfaSetup, setMfaSetup] = useState(false);
+  const [mfaVerifying, setMfaVerifying] = useState(false);
   const [mfaVerified, setMfaVerified] = useState(false);
   const mfaDigits = Array.from({ length: 6 }, (_, index) => mfaCode[index] ?? "");
+
+  useEffect(() => {
+    if (checking) {
+      setAuthReady(false);
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      const timer = window.setTimeout(() => {
+        setAuthReady(true);
+      }, 180);
+
+      return () => window.clearTimeout(timer);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [checking]);
 
   useEffect(() => {
     let cancelled = false;
@@ -251,6 +271,7 @@ function AuthPage() {
     }
 
     setBusy(true);
+    setMfaVerifying(true);
 
     const { error: verifyError } = await supabase.auth.mfa.verify({
       factorId: mfaFactorId,
@@ -261,14 +282,18 @@ function AuthPage() {
     setBusy(false);
 
     if (verifyError) {
+      setMfaVerifying(false);
       return setError("That verification code was not accepted. Please try again.");
     }
 
-    setMfaVerified(true);
+    setTimeout(() => {
+      setMfaVerifying(false);
+      setMfaVerified(true);
+    }, 700);
 
     setTimeout(() => {
       navigate({ to: "/", replace: true });
-    }, 1800);
+    }, 2500);
   }
 
   if (checking) {
@@ -319,8 +344,20 @@ function AuthPage() {
             </div>
           </div>
 
-            {mode === "mfa" ? (
-              mfaVerified ? (
+            {authReady ? (
+              <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={mfaVerified ? "verified" : mode}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                {mode === "mfa" ? (
+                  mfaVerified ? (
                 <div className="mt-6 flex min-h-[260px] flex-col items-center justify-center text-center animate-[mfa-enter_500ms_cubic-bezier(0.22,1,0.36,1)]">
                   <div className="relative flex size-24 items-center justify-center">
                     <span className="absolute inset-0 rounded-full bg-gold/10 animate-[success-glow_1.8s_ease-out_forwards]" />
@@ -338,9 +375,36 @@ function AuthPage() {
                     Secure access confirmed.
                   </p>
                 </div>
+              ) : mfaVerifying ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.35,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="mt-6 flex min-h-[260px] flex-col items-center justify-center text-center"
+                >
+                  <ShieldCheck
+                    className="size-16 text-gold animate-[shield-breathe_2.4s_ease-in-out_infinite]"
+                    strokeWidth={1.4}
+                  />
+                  <h2 className="mt-7 font-display text-2xl">
+                    Verifying
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Confirming your secure access…
+                  </p>
+                </motion.div>
               ) : (
-              <form
-                className="mt-6 animate-[mfa-enter_500ms_cubic-bezier(0.22,1,0.36,1)] space-y-4"
+                <motion.form
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="mt-6 space-y-4"
                 onSubmit={verifyMfaCode}
                 noValidate
               >
@@ -449,7 +513,7 @@ function AuthPage() {
                 >
                   Cancel and return to sign in
                 </button>
-              </form>
+              </motion.form>
               )
             ) : (
           <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
@@ -567,8 +631,11 @@ function AuthPage() {
                     ? "Send Reset Link"
                     : "Sign In"}
             </button>
-          </form>
-            )}
+                  </form>
+                )}
+              </motion.div>
+            </AnimatePresence>
+            ) : null}
 
           <div className="mt-5 flex flex-wrap justify-between gap-3 text-sm">
             {mode === "signin" ? (

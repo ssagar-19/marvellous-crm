@@ -18,6 +18,7 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { supabase } from '@/integrations/supabase/client'
 import { AppShell } from '@/components/app-shell'
+import { motion } from 'motion/react'
 
 const SIGN_IN_ROUTE = '/auth'
 
@@ -44,7 +45,16 @@ export const Route = createFileRoute('/_authenticated')({
   },
   component: () => (
     <AppShell>
-      <Outlet />
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+      >
+        <Outlet />
+      </motion.div>
     </AppShell>
   ),
 })
