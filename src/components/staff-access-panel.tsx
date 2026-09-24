@@ -6,6 +6,7 @@ import {
   revokeInviteCode,
 } from "@/lib/auth.functions";
 import { inviteCodesQuery, myAccessQuery, staffAccountsQuery } from "@/lib/auth-queries";
+import { roleLabels } from "@/lib/auth.functions";
 
 function formatDate(value: string | null) {
   if (!value) return "—";
@@ -113,7 +114,7 @@ function InviteCodes() {
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
-    mutationFn: () => createInviteCode({ data: {} }),
+    mutationFn: () => createInviteCode(),
     onSuccess: () => {
       setError(null);
       queryClient.invalidateQueries({ queryKey: inviteCodesQuery.queryKey });

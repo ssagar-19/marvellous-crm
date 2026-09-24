@@ -207,7 +207,7 @@ function InvoicePage() {
       items: lineItems,
 
       vatRate,
-      depositPaid,
+      depositPaid: Number(depositPaid) || 0,
       notes: notes || null,
     });
 
@@ -260,7 +260,7 @@ function InvoicePage() {
       items: lineItems,
 
       vatRate,
-      depositPaid,
+      depositPaid: Number(depositPaid) || 0,
       notes: notes || null,
     });
 

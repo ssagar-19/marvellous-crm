@@ -209,11 +209,12 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
 
     const email = data.email?.trim() ? data.email.trim() : null;
     const postcode = data.postcode?.trim() ? data.postcode.trim() : null;
+    const phone = data.phone?.trim() ?? "";
     const first = data.items[0]!;
 
     let clientId = data.clientId ?? null;
     if (!clientId) {
-      const digits = data.phone.replace(/\D/g, "");
+      const digits = phone.replace(/\D/g, "");
       const { data: existing } = await db
         .from("marvellous_clients")
         .select("id")
@@ -227,7 +228,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
         .from("marvellous_clients")
         .update({
           full_name: data.fullName,
-          phone: data.phone,
+          phone,
           email,
           postcode,
         })
@@ -237,7 +238,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
         .from("marvellous_clients")
         .insert({
           full_name: data.fullName,
-          phone: data.phone,
+          phone,
           email,
           postcode,
         })
@@ -253,7 +254,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
         client_id: clientId,
         item_type: data.items.length > 1 ? `${first.itemType} +${data.items.length - 1}` : first.itemType,
         item_description: first.description,
-        metal: first.metal,
+        metal: first.metal ?? null,
         stone: first.stone?.trim() ? first.stone.trim() : null,
         service: first.service,
         quoted_price: data.quotedPrice ?? null,
@@ -276,7 +277,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
         position: index + 1,
         item_type: item.itemType,
         service: item.service,
-        metal: item.metal,
+        metal: item.metal ?? null,
         stone: item.stone?.trim() ? item.stone.trim() : null,
         item_description: item.description,
       })),

@@ -438,10 +438,10 @@ function NewJob() {
           <Card step="3" title="Job Details" icon={FileText}>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm"><span className="mb-2 block text-muted-foreground">Quoted price</span>
-                <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="" value={form.quotedPrice} placeholder="0" onChange={set("quotedPrice")} onBlur={() => { if (!form.quotedPrice) setForm((f) => ({ ...f, quotedPrice: "0" })); }} />
+                <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="0" value={form.quotedPrice} onChange={set("quotedPrice")} onBlur={() => { if (!form.quotedPrice) setForm((f) => ({ ...f, quotedPrice: "0" })); }} />
               </label>
               <label className="text-sm"><span className="mb-2 block text-muted-foreground">Deposit taken</span>
-                <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="" value={form.depositAmount} placeholder="0" onChange={set("depositAmount")} onBlur={() => { if (!form.depositAmount) setForm((f) => ({ ...f, depositAmount: "0" })); }} />
+                <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="0" value={form.depositAmount} onChange={set("depositAmount")} onBlur={() => { if (!form.depositAmount) setForm((f) => ({ ...f, depositAmount: "0" })); }} />
               </label>
               <label className="text-sm"><span className="mb-2 block text-muted-foreground">Promised completion date <span className="text-gold">*</span></span>
                 <input className={field} type="date" value={form.promisedDate} onChange={set("promisedDate")} />

@@ -45,16 +45,25 @@ export const verifyInviteCode = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error || !invite) throw new Error("That referral code is not recognised.");
-    if (invite.revoked_at) throw new Error("That referral code has been revoked.");
-    if (invite.used_at) throw new Error("That referral code has already been used.");
-    if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
+
+    const typedInvite = invite as unknown as {
+      id: string;
+      role: AppRole;
+      authorised_email: string;
+      expires_at: string | null;
+      revoked_at: string | null;
+      used_at: string | null;
+    };
+    if (typedInvite.revoked_at) throw new Error("That referral code has been revoked.");
+    if (typedInvite.used_at) throw new Error("That referral code has already been used.");
+    if (typedInvite.expires_at && new Date(typedInvite.expires_at).getTime() < Date.now()) {
       throw new Error("That referral code has expired.");
     }
-    if (invite.authorised_email.toLowerCase() !== data.email.trim().toLowerCase()) {
+    if (typedInvite.authorised_email.toLowerCase() !== data.email.trim().toLowerCase()) {
       throw new Error("That referral code is not authorised for this email address.");
     }
 
-    return { ok: true, role: invite.role as AppRole };
+    return { ok: true, role: typedInvite.role as AppRole };
   });
 
 /**
@@ -74,12 +83,21 @@ export const staffSignUp = createServerFn({ method: "POST" })
       .maybeSingle();
     if (inviteError) throw new Error("Could not verify that referral code.");
     if (!invite) throw new Error("That referral code is not recognised.");
-    if (invite.revoked_at) throw new Error("That referral code has been revoked.");
-    if (invite.used_at) throw new Error("That referral code has already been used.");
-    if (invite.expires_at && new Date(invite.expires_at).getTime() < Date.now()) {
+
+    const typedSignupInvite = invite as unknown as {
+      id: string;
+      role: AppRole;
+      authorised_email: string;
+      expires_at: string | null;
+      revoked_at: string | null;
+      used_at: string | null;
+    };
+    if (typedSignupInvite.revoked_at) throw new Error("That referral code has been revoked.");
+    if (typedSignupInvite.used_at) throw new Error("That referral code has already been used.");
+    if (typedSignupInvite.expires_at && new Date(typedSignupInvite.expires_at).getTime() < Date.now()) {
       throw new Error("That referral code has expired.");
     }
-    if (invite.authorised_email.toLowerCase() !== data.email.trim().toLowerCase()) {
+    if (typedSignupInvite.authorised_email.toLowerCase() !== data.email.trim().toLowerCase()) {
       throw new Error("That referral code is not authorised for this email address.");
     }
 
@@ -107,7 +125,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
     // Role comes from the invite only - never from anything the user sends.
     const { error: roleError } = await supabaseAdmin
       .from("marvellous_user_roles")
-      .insert({ user_id: userId, role: invite.role });
+      .insert({ user_id: userId, role: typedSignupInvite.role });
     if (roleError) {
       await supabaseAdmin.auth.admin.deleteUser(userId);
       throw new Error("Could not assign the staff role.");
@@ -116,7 +134,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
     const { data: claimedInvite, error: claimError } = await supabaseAdmin
       .from("marvellous_invite_codes")
       .update({ used_by: userId, used_at: new Date().toISOString() })
-      .eq("id", invite.id)
+      .eq("id", typedSignupInvite.id)
       .is("used_at", null)
       .select("id")
       .maybeSingle();
@@ -126,7 +144,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
       throw new Error("That referral code has already been used.");
     }
 
-    return { ok: true, role: invite.role as AppRole };
+    return { ok: true, role: typedSignupInvite.role as AppRole };
   });
 
 /* ------------------------------ my access -------------------------------- */
@@ -237,7 +255,7 @@ export const createInviteCode = createServerFn({ method: "POST" })
     await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const code = randomCode();
-    const { error } = await supabaseAdmin.from("marvellous_invite_codes").insert({
+    const { error } = await (supabaseAdmin.from("marvellous_invite_codes") as any).insert({
       code,
       role: "admin",
       authorised_email: "hello@marvellousjewellers.com",

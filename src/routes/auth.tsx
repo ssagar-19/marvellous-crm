@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Lock, Mail, ShieldCheck, UserPlus } from "lucide-react";
+import { Check, Loader2, Lock, Mail, ShieldCheck, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { staffSignUp, verifyInviteCode } from "@/lib/auth.functions";
 import { Logo } from "@/components/app-shell";
 import type { AppRole } from "@/lib/auth.functions";
+import { roleLabels } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -52,6 +53,8 @@ function AuthPage() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaQrCode, setMfaQrCode] = useState("");
   const [mfaSetup, setMfaSetup] = useState(false);
+  const [mfaVerified, setMfaVerified] = useState(false);
+  const mfaDigits = Array.from({ length: 6 }, (_, index) => mfaCode[index] ?? "");
 
   useEffect(() => {
     let cancelled = false;
@@ -213,16 +216,22 @@ function AuthPage() {
       setMfaSetup(totpFactor.status !== "verified");
     }
 
+    if (!factorId) {
+      return setError("Could not find or create your authenticator.");
+    }
+
+    const verifiedFactorId: string = factorId;
+
     const { data: challenge, error: challengeError } =
       await supabase.auth.mfa.challenge({
-        factorId,
+        factorId: verifiedFactorId,
       });
 
     if (challengeError) {
       return setError(challengeError.message);
     }
 
-    setMfaFactorId(factorId);
+    setMfaFactorId(verifiedFactorId);
     setMfaChallengeId(challenge.id);
     setMfaCode("");
     setMode("mfa");
@@ -255,7 +264,11 @@ function AuthPage() {
       return setError("That verification code was not accepted. Please try again.");
     }
 
-    navigate({ to: "/", replace: true });
+    setMfaVerified(true);
+
+    setTimeout(() => {
+      navigate({ to: "/", replace: true });
+    }, 1800);
   }
 
   if (checking) {
@@ -268,7 +281,7 @@ function AuthPage() {
 
   return (
     <div className="app-bg grid min-h-screen place-items-center px-4 py-12">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md -translate-y-8">
         <div className="mb-8 flex justify-center">
           <Logo />
         </div>
@@ -292,22 +305,50 @@ function AuthPage() {
                       ? "Reset Password"
                       : "Staff Sign In"}
               </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {mode === "signup"
-                  ? "Complete your staff account using your approved invitation."
-                  : mode === "referral"
-                    ? "Enter the referral code provided by a Marvellous administrator."
-                    : mode === "forgot"
-                      ? "We will email you a secure link to set a new password."
-                      : "Secure access to the Marvellous Jewellers CRM."}
-              </p>
+              {mode !== "mfa" ? (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {mode === "signup"
+                    ? "Complete your staff account using your approved invitation."
+                    : mode === "referral"
+                      ? "Enter the referral code provided by a Marvellous administrator."
+                      : mode === "forgot"
+                        ? "We will email you a secure link to set a new password."
+                        : "Secure access to the Marvellous Jewellers CRM."}
+                </p>
+              ) : null}
             </div>
           </div>
 
             {mode === "mfa" ? (
-              <form className="mt-6 space-y-4" onSubmit={verifyMfaCode} noValidate>
-                <div className="rounded-2xl border border-gold/20 bg-[var(--navy-deep)]/30 p-5 text-center">
-                  <ShieldCheck className="mx-auto size-8 text-gold" strokeWidth={1.5} />
+              mfaVerified ? (
+                <div className="mt-6 flex min-h-[260px] flex-col items-center justify-center text-center animate-[mfa-enter_500ms_cubic-bezier(0.22,1,0.36,1)]">
+                  <div className="relative flex size-24 items-center justify-center">
+                    <span className="absolute inset-0 rounded-full bg-gold/10 animate-[success-glow_1.8s_ease-out_forwards]" />
+                    <span className="absolute inset-2 rounded-full border border-gold/30 animate-[success-ring_1.2s_ease-out_forwards]" />
+                    <span className="relative flex size-16 items-center justify-center rounded-full border border-gold/50 bg-gold/10 animate-[success-icon_500ms_cubic-bezier(0.22,1,0.36,1)_forwards]">
+                      <Check className="size-8 text-gold" strokeWidth={1.7} />
+                    </span>
+                  </div>
+
+                  <h2 className="mt-7 font-display text-2xl">
+                    Verified
+                  </h2>
+
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Secure access confirmed.
+                  </p>
+                </div>
+              ) : (
+              <form
+                className="mt-6 animate-[mfa-enter_500ms_cubic-bezier(0.22,1,0.36,1)] space-y-4"
+                onSubmit={verifyMfaCode}
+                noValidate
+              >
+                <div className="rounded-2xl bg-[var(--navy-deep)]/15 px-5 py-4 text-center">
+                  <ShieldCheck
+                    className="mx-auto size-10 text-gold animate-[shield-breathe_3s_ease-in-out_infinite]"
+                    strokeWidth={1.5}
+                  />
                   {mfaSetup && mfaQrCode ? (
                     <>
                       <p className="mt-3 text-sm text-muted-foreground">
@@ -329,26 +370,52 @@ function AuthPage() {
                     </>
                   ) : (
                     <p className="mt-3 text-sm text-muted-foreground">
-                      Enter the six-digit verification code from Apple Passwords.
+                      Enter your six-digit verification code.
                     </p>
                   )}
                 </div>
 
                 <label className="block text-sm">
-                  <span className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
-                    Verification Code
-                  </span>
+                  <span className="sr-only">Verification Code</span>
+
+                  <div className="mx-auto flex max-w-xs justify-center gap-3">
+                    {mfaDigits.map((digit, index) => (
+                      <div
+                        key={index}
+                        className="relative flex h-12 w-9 items-end justify-center"
+                      >
+                        <span
+                          className={`mb-1 text-2xl font-medium transition-all duration-300 ${
+                            digit
+                              ? "translate-y-0 text-foreground opacity-100"
+                              : "translate-y-1 text-transparent opacity-0"
+                          }`}
+                        >
+                          {digit}
+                        </span>
+
+                        <span
+                          className={`absolute bottom-0 left-0 h-px w-full transition-all duration-300 ${
+                            digit
+                              ? "bg-gold shadow-[0_0_10px_rgba(212,175,55,0.45)]"
+                              : "bg-white/25"
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
                   <input
-                    className={`${field} text-center text-lg tracking-[0.35em]`}
+                    className="absolute h-px w-px opacity-0"
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     value={mfaCode}
                     onChange={(e) =>
                       setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))
                     }
-                    placeholder="000000"
                     maxLength={6}
                     autoFocus
+                    aria-label="Verification Code"
                   />
                 </label>
 
@@ -383,6 +450,7 @@ function AuthPage() {
                   Cancel and return to sign in
                 </button>
               </form>
+              )
             ) : (
           <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
             {mode === "signup" ? (
