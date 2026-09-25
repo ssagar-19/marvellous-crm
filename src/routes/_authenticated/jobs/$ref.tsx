@@ -3,7 +3,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { jobQuery } from "@/lib/crm-queries";
 import { useState } from "react";
 import {
-  ArrowLeft, MoreHorizontal, MapPin, Gem, Image as ImageIcon, FileText, Clock, Zap,
+  ArrowLeft, Gem, Image as ImageIcon, FileText, Clock, Zap,
   Plus, Printer, Check, Wrench, PoundSterling, User, Calendar, CircleCheck, Loader2, Upload,
 } from "lucide-react";
 import { PanelError, PanelLoading } from "@/components/app-shell";
@@ -114,7 +114,16 @@ function JobDetail() {
   const next = allowedTransitions[job.status];
   const outstanding = Math.max((job.quotedPrice ?? 0) - (job.depositAmount ?? 0), 0);
   const currentStage = progressStages.findIndex((s) => s.statuses.includes(job.status));
-  const busy = statusMutation.isPending || locationMutation.isPending || quoteMutation.isPending;
+  const busy = statusMutation.isPending;
+
+  const workflowAction =
+    job.status === "RECEIVED"
+      ? { label: "Workshop", status: "IN_PROGRESS" as JobStatus }
+      : job.status === "IN_PROGRESS"
+        ? { label: "Completed", status: "COMPLETED" as JobStatus }
+        : job.status === "COMPLETED"
+          ? { label: "Collected", status: "COLLECTED" as JobStatus }
+          : null;
   const awaitingQuote = job.status === "TO_QUOTE";
 
   return (
@@ -149,133 +158,150 @@ function JobDetail() {
         <Link to="/jobs" className="glass flex h-11 items-center gap-2 rounded-xl px-4 text-sm">
           <ArrowLeft className="size-4 text-gold" /> Back to Jobs
         </Link>
-        <div className="flex items-center gap-3">
-          {busy ? <Loader2 className="size-4 animate-spin text-gold" /> : null}
-          <select
-            className={selectClass + " text-gold"}
-            value=""
-            disabled={busy || next.length === 0}
-            onChange={(e) => { if (e.target.value) statusMutation.mutate(e.target.value as JobStatus); }}
-          >
-            <option value="">{next.length === 0 ? "No further steps" : "Move job to…"}</option>
-            {next.map((s) => <option key={s} value={s}>{statusLabels[s]}</option>)}
-          </select>
-          <button className="glass grid size-11 place-items-center rounded-xl"><MoreHorizontal className="size-4 text-gold" /></button>
-        </div>
       </motion.div>
 
       {error ? <PanelError title="Could not update this job" message={error} /> : null}
 
       <div className="glass flex flex-wrap items-center gap-5 rounded-2xl p-5">
-        <div className="grid size-16 place-items-center rounded-xl border border-gold/25 bg-accent/40"><Gem className="size-7 text-gold" /></div>
-        <div className="min-w-0">
-          <h1 className="font-display text-3xl">{job.itemType} — {job.service}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{job.reference} &nbsp;|&nbsp; Created {formatDate(job.createdAt)}</p>
-        </div>
-        <div className="ml-auto flex flex-wrap items-center gap-3">
-          <div className="glass-gold flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
-            style={{ color: toneColor[statusTone[job.status]] }}>
-            <Wrench className="size-4" /> {statusLabels[job.status]}
-          </div>
-          <div className="glass flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm">
-            <MapPin className="size-4 text-gold" />
-            <div className="leading-tight">
-              <div className="text-xs text-muted-foreground">Current Location</div>
-              <select
-                className="bg-transparent text-sm outline-none"
-                value={job.location}
-                disabled={busy}
-                onChange={(e) => locationMutation.mutate(e.target.value as JobLocation)}
-              >
-                {JOB_LOCATIONS.map((l) => <option key={l} value={l} className="bg-[var(--navy-deep)]">{locationLabels[l]}</option>)}
-              </select>
+        <div className="min-w-[300px] shrink-0">
+          <div className="flex items-center gap-5">
+            <div className="grid size-16 place-items-center rounded-xl border border-gold/25 bg-accent/40">
+              <Gem className="size-7 text-gold" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-3xl">{job.itemType} — {job.service}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {job.reference} &nbsp;|&nbsp; Created {formatDate(job.createdAt)}
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="glass rounded-2xl px-6 py-6">
-        <div className="flex items-start justify-between gap-2">
-          {progressStages.map((s, i) => {
-            const done = currentStage >= 0 && i < currentStage;
-            const current = i === currentStage;
-            return (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  delay: i * 0.07,
-                  duration: 0.4,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="relative flex-1 text-center"
-              >
-                {i < progressStages.length - 1 ? (
-                  <span className="absolute left-1/2 top-4 h-px w-full"
-                    style={{ background: done || current ? "var(--gold)" : "color-mix(in oklab, var(--gold) 20%, transparent)" }} />
-                ) : null}
-                <span className={"relative z-10 mx-auto grid size-8 place-items-center rounded-full border " +
-                  (done || current ? "border-gold bg-gold text-[var(--navy-deep)]" : "border-border bg-accent/50 text-muted-foreground")}>
-                  {done ? <Check className="size-4" /> : current ? <Wrench className="size-4" /> : <CircleCheck className="size-3.5" />}
-                </span>
-                <div className="mt-2 text-sm">{s.label}</div>
-                <div className="text-xs text-muted-foreground">{current ? "Current stage" : ""}</div>
-              </motion.div>
-            );
-          })}
+        <div className="mx-auto flex min-w-[360px] max-w-[760px] flex-1 self-center translate-y-3 items-center">
+          <div className="relative flex w-full items-start">
+            <div className="absolute left-4 right-4 top-4 flex h-px items-center">
+              <span className="h-px w-full bg-gold/20" />
+            </div>
+
+            {progressStages.map((s, i) => {
+              const done = currentStage >= 0 && i < currentStage;
+              const current = i === currentStage;
+
+              return (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{
+                    delay: i * 0.08,
+                    duration: 0.45,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="relative z-10 flex flex-1 flex-col items-center text-center"
+                >
+                  <motion.span
+                    animate={
+                      current
+                        ? {
+                            scale: [1, 1.06, 1],
+                            boxShadow: [
+                              "0 0 0 0 rgba(215, 178, 94, 0)",
+                              "0 0 18px 2px rgba(215, 178, 94, 0.22)",
+                              "0 0 0 0 rgba(215, 178, 94, 0)",
+                            ],
+                          }
+                        : { scale: 1 }
+                    }
+                    transition={
+                      current
+                        ? {
+                            duration: 2.4,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }
+                        : {
+                            duration: 0.3,
+                          }
+                    }
+                    className={
+                      "grid size-8 place-items-center rounded-full border backdrop-blur-xl transition-colors " +
+                      (done
+                        ? "border-gold/55 bg-gold/10 text-gold"
+                        : current
+                          ? "border-gold/75 bg-gold/15 text-gold"
+                          : "border-white/10 bg-white/[0.05] text-muted-foreground")
+                    }
+                  >
+                    {done ? (
+                      <Check className="size-3.5" />
+                    ) : current ? (
+                      <Wrench className="size-3.5" />
+                    ) : (
+                      <CircleCheck className="size-3" />
+                    )}
+                  </motion.span>
+
+                  <span
+                    className={
+                      "mt-1.5 text-[11px] " +
+                      (current ? "text-foreground" : "text-muted-foreground")
+                    }
+                  >
+                    {s.label}
+                  </span>
+
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="ml-auto flex shrink-0 items-center">
+          <div
+            className="glass-gold flex items-center gap-3 rounded-xl px-4 py-3 text-sm"
+            style={{ color: toneColor[statusTone[job.status]] }}
+          >
+            <Wrench className="size-4" /> {statusLabels[job.status]}
+          </div>
         </div>
       </div>
 
       <section className="glass-inset rounded-xl px-4 py-3">
-  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-    <Zap className="size-3.5 text-gold" /> Quick Actions
-  </div>
+        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          <Zap className="size-3.5 text-gold" /> Quick Actions
+        </div>
 
-  <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-    <button
-      type="button"
-      onClick={() => window.print()}
-      className="glass flex items-center gap-2 rounded-lg px-3 py-2"
-    >
-      <Printer className="size-4 text-gold" /> Print Job Sheet
-    </button>
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="glass flex items-center gap-2 rounded-lg px-3 py-2"
+          >
+            <Printer className="size-4 text-gold" /> Print Job Sheet
+          </button>
 
-   <Link
-  to="/invoices/$id"
-  params={{ id: ref }}
-  className="glass flex items-center gap-2 rounded-lg px-3 py-2"
->
-  <FileText className="size-4 text-gold" /> Invoice
-</Link>
+          <Link
+            to="/invoices/$id"
+            params={{ id: ref }}
+            className="glass flex items-center gap-2 rounded-lg px-3 py-2"
+          >
+            <FileText className="size-4 text-gold" /> Invoice
+          </Link>
 
-    <span className="glass flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground">
-      <Upload className="size-4 text-gold" /> Photo upload next phase
-    </span>
+          <span className="glass flex items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground">
+            <Upload className="size-4 text-gold" /> Photo upload next phase
+          </span>
 
-    {awaitingQuote ? (
-      <span className="glass flex items-center gap-2 rounded-lg px-3 py-2">
-        <PoundSterling className="size-4 text-gold" />
-        <input
-          className="w-28 bg-transparent text-sm outline-none"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="Quote amount"
-          value={quote}
-          onChange={(e) => setQuote(e.target.value)}
-        />
-              <button type="button" disabled={busy || quote.trim() === ""}
-                onClick={() => quoteMutation.mutate(Number(quote))}
-                className="text-gold disabled:opacity-50">Send quote</button>
-            </span>
-          ) : null}
-          {next.map((s) => (
-            <button key={s} type="button" disabled={busy} onClick={() => statusMutation.mutate(s)}
-              className="glass-gold flex items-center gap-2 rounded-lg px-3 py-2 text-gold disabled:opacity-60">
-              <Check className="size-4" /> Mark as {statusLabels[s]}
+          {workflowAction ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => statusMutation.mutate(workflowAction.status)}
+              className="glass-gold flex items-center gap-2 rounded-lg px-3 py-2 text-gold disabled:opacity-60"
+            >
+              <Check className="size-4" /> {workflowAction.label}
             </button>
-          ))}
+          ) : null}
         </div>
       </section>
 
@@ -339,10 +365,6 @@ function JobDetail() {
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Priority</span>
                 <span>{priorityLabels[job.priority]}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Location</span>
-                <span>{locationLabels[job.location]}</span>
               </div>
             </div>
           </Panel>

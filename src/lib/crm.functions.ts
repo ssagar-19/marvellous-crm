@@ -262,7 +262,7 @@ export const createJob = createServerFn({ method: "POST" }).middleware([requireS
         promised_completion_date: data.promisedDate,
         priority: data.priority === "LOW" ? "NORMAL" : data.priority,
         customer_notes: data.customerNotes?.trim() ? data.customerNotes.trim() : null,
-        status: data.needsQuote ? "TO_QUOTE" : "AWAITING_WORKSHOP",
+        status: "RECEIVED",
         location: "FRONT_DESK",
         accepted_by: staff,
         is_draft: data.isDraft ?? false,

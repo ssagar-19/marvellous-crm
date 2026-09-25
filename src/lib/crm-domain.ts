@@ -108,16 +108,16 @@ export const allowedTransitions: Record<JobStatus, JobStatus[]> = {
   NEW: ["TO_QUOTE", "AWAITING_WORKSHOP", "ON_HOLD", "CANCELLED"],
   TO_QUOTE: ["AWAITING_APPROVAL", "AWAITING_WORKSHOP", "ON_HOLD", "CANCELLED"],
   AWAITING_WORKSHOP: ["RECEIVED", "TO_QUOTE", "ON_HOLD", "CANCELLED"],
-  RECEIVED: ["INSPECTION", "IN_PROGRESS", "AWAITING_APPROVAL", "TO_QUOTE", "ON_HOLD", "CANCELLED"],
+  RECEIVED: ["IN_PROGRESS"],
   INSPECTION: ["AWAITING_APPROVAL", "TO_QUOTE", "IN_PROGRESS", "WAITING_FOR_PARTS", "ON_HOLD", "CANCELLED"],
   AWAITING_APPROVAL: ["IN_PROGRESS", "CUSTOMER_DECLINED", "ON_HOLD", "CANCELLED"],
-  IN_PROGRESS: ["AWAITING_QC", "WAITING_FOR_PARTS", "AWAITING_APPROVAL", "ON_HOLD", "CANCELLED"],
+  IN_PROGRESS: ["COMPLETED"],
   WAITING_FOR_PARTS: ["IN_PROGRESS", "ON_HOLD", "CANCELLED"],
   AWAITING_QC: ["READY_FOR_COLLECTION", "RETURNED_TO_WORKSHOP", "ON_HOLD"],
   RETURNED_TO_WORKSHOP: ["IN_PROGRESS", "AWAITING_QC", "ON_HOLD"],
   READY_FOR_COLLECTION: ["COLLECTED", "RETURNED_TO_WORKSHOP"],
-  COLLECTED: ["COMPLETED"],
-  COMPLETED: [],
+  COLLECTED: [],
+  COMPLETED: ["COLLECTED"],
   CUSTOMER_DECLINED: ["READY_FOR_COLLECTION", "CANCELLED"],
   CANCELLED: [],
   ON_HOLD: ["AWAITING_WORKSHOP", "RECEIVED", "IN_PROGRESS", "CANCELLED"],
@@ -181,14 +181,10 @@ export const boardColumns = [
 
 /** Job detail progress rail. */
 export const progressStages: { label: string; statuses: JobStatus[] }[] = [
-  { label: "Received", statuses: ["NEW", "TO_QUOTE", "AWAITING_WORKSHOP", "RECEIVED", "INSPECTION"] },
-  {
-    label: "In Workshop",
-    statuses: ["IN_PROGRESS", "WAITING_FOR_PARTS", "RETURNED_TO_WORKSHOP", "AWAITING_APPROVAL", "ON_HOLD"],
-  },
-  { label: "Quality Check", statuses: ["AWAITING_QC"] },
-  { label: "Ready for Collection", statuses: ["READY_FOR_COLLECTION"] },
-  { label: "Completed", statuses: ["COLLECTED", "COMPLETED"] },
+  { label: "Received", statuses: ["RECEIVED"] },
+  { label: "Workshop", statuses: ["IN_PROGRESS"] },
+  { label: "Completed", statuses: ["COMPLETED"] },
+  { label: "Collected", statuses: ["COLLECTED"] },
 ];
 
 export type JobDTO = {
