@@ -179,7 +179,7 @@
       transparent 72%
     );
   transform: rotate(-12deg) scale(1.15);
-  filter: blur(35px);
+  filter: none;
 }
 
 .app-bg::after {
@@ -201,7 +201,7 @@
       oklch(0.33 0.10 250 / 0.20) 54%,
       transparent 70%
     );
-  filter: blur(28px);
+  filter: none;
   transform: scale(1.08);
 }
 

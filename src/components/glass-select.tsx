@@ -41,20 +41,14 @@ export function GlassSelect({
       </button>
 
       {open ? (
-        <>
-          <button
-            type="button"
-            aria-label="Close dropdown"
-            className="fixed inset-0 z-40 cursor-default"
-            onClick={() => setOpen(false)}
-          />
-
-          <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-gold/40 bg-[var(--sidebar)] p-1 shadow-xl backdrop-blur-xl">
+        <div className="absolute left-0 top-full z-[60] mt-2 w-full overflow-hidden rounded-xl border border-gold/40 bg-[var(--sidebar)] p-1 shadow-xl backdrop-blur-xl">
             {options.map((option) => (
               <button
                 key={option.value}
                 type="button"
-                onClick={() => {
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
                   onChange(option.value);
                   setOpen(false);
                 }}
@@ -72,7 +66,6 @@ export function GlassSelect({
               </button>
             ))}
           </div>
-        </>
       ) : null}
     </div>
   );
