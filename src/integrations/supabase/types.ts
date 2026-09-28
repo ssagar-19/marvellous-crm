@@ -655,7 +655,7 @@ export type Database = {
     }
     Enums: {
       company_role: "owner_admin" | "engineer"
-      marvellous_app_role: "admin" | "staff"
+      marvellous_app_role: "admin" | "staff" | "developer"
       marvellous_job_location: "FRONT_DESK" | "WORKSHOP"
       marvellous_job_priority: "NORMAL" | "HIGH" | "URGENT"
       marvellous_job_status:

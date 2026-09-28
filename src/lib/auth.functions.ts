@@ -2,11 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export const APP_ROLES = ["admin"] as const;
+export const APP_ROLES = ["admin", "developer"] as const;
 export type AppRole = (typeof APP_ROLES)[number];
 
 export const roleLabels: Record<AppRole, string> = {
   admin: "Admin",
+  developer: "Developer",
 };
 
 export type StaffAccess = {
