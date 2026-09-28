@@ -646,9 +646,6 @@ function AuthPage() {
                 >
                   Forgot password?
                 </button>
-                <button className="text-gold" onClick={() => switchMode("referral")}>
-                  Have a referral code?
-                </button>
               </>
             ) : mode === "signup" ? (
               <button
