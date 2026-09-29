@@ -27,7 +27,7 @@ const nav: { label: string; to: string; icon: LucideIcon; badge?: number }[] = [
   { label: "Jobs", to: "/jobs", icon: ClipboardList },
   { label: "Workshop", to: "/workshop", icon: Wrench },
   { label: "Reports", to: "/reports", icon: BarChart3 },
-  { label: "Enquiries", to: "/enquiries", icon: Mail, badge: 2 },
+  { label: "Enquiries", to: "/enquiries", icon: Mail },
   { label: "Settings", to: "/settings", icon: SettingsIcon },
 ];
 

@@ -82,12 +82,7 @@ export const overdue = [
   { ref: "MJ-24076", customer: "Sophie Turner", service: "Bracelet repair", due: "15 Sep", days: 3 },
 ];
 
-export const outlook = [
-  { title: "New repair booking", who: "Sarah Hamilton", body: "Ring resize enquiry — would like a quote please…", when: "2 min ago", tone: "amber" },
-  { title: "Repair approval", who: "James Patel", body: "Please proceed with the watch service. Thank you!", when: "18 min ago", tone: "red" },
-  { title: "Customer enquiry", who: "Lucy Thompson", body: "Just checking whether my item is ready for collection…", when: "42 min ago", tone: "amber" },
-  { title: "Booking request", who: "Mark Wilson", body: "Looking to book in a bracelet repair next week…", when: "1 hour ago", tone: "muted" },
-];
+export const outlook = [];
 
 export const clientGroups = [
   {
