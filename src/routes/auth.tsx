@@ -299,7 +299,14 @@ function AuthPage() {
   if (checking) {
     return (
       <div className="app-bg grid min-h-screen place-items-center">
-        <Loader2 className="size-6 animate-spin text-gold" />
+        <motion.img
+          src="/assets/marvellous-logo-mark.png"
+          alt="Marvellous Jewellers"
+          className="w-28"
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        />
       </div>
     );
   }

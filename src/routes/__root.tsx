@@ -117,6 +117,10 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <div id="initial-loading" style={{ position: "fixed", inset: 0, zIndex: 99999, display: "grid", placeItems: "center", background: "#101820", opacity: 1, transition: "opacity 400ms ease" }}>
+          <img src="/assets/marvellous-logo-mark.png" alt="Marvellous" style={{ width: 72, height: 72, objectFit: "contain" }} />
+        </div>
+        <script dangerouslySetInnerHTML={{ __html: `window.addEventListener("load", () => { const el = document.getElementById("initial-loading"); if (el) { el.style.opacity = "0"; setTimeout(() => el.remove(), 400); } });` }} />
         {children}
         <Scripts />
       </body>
