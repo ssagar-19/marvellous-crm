@@ -6,7 +6,7 @@ import { outlook } from "@/lib/crm-data";
 export const Route = createFileRoute("/_authenticated/outlook")({
   head: () => ({
     meta: [
-      { title: "Outlook Inbox | Marvellous Jewellers CRM" },
+      { title: "Outlook Inbox | Marvellous Jewellers" },
       {
         name: "description",
         content:

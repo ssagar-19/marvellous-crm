@@ -9,7 +9,7 @@ import type { ClientWithJobs } from "@/lib/crm.functions";
 export const Route = createFileRoute("/_authenticated/clients/")({
   head: () => ({
     meta: [
-      { title: "Clients | Marvellous Jewellers CRM" },
+      { title: "Clients | Marvellous Jewellers" },
       {
         name: "description",
         content:

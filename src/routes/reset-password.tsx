@@ -8,7 +8,7 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Set a New Password | Marvellous Jewellers CRM" },
+      { title: "Set a New Password | Marvellous Jewellers" },
       {
         name: "description",
         content: "Choose a new password for your Marvellous Jewellers CRM staff account.",

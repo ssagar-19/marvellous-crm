@@ -18,7 +18,7 @@ import {
 export const Route = createFileRoute("/_authenticated/jobs/$ref")({
   head: ({ params }) => ({
     meta: [
-      { title: `Job ${params.ref} | Marvellous Jewellers CRM` },
+      { title: `Job ${params.ref} | Marvellous Jewellers` },
       { name: "description", content: `Full detail, notes and activity timeline for job ${params.ref}.` },
       { property: "og:title", content: `Job ${params.ref}` },
       { property: "og:description", content: "Job detail, notes and activity timeline." },

@@ -15,7 +15,7 @@ import {
 export const Route = createFileRoute("/_authenticated/clients/$id")({
   head: ({ params }) => ({
     meta: [
-      { title: `Client ${params.id.slice(0, 8)} | Marvellous Jewellers CRM` },
+      { title: `Client ${params.id.slice(0, 8)} | Marvellous Jewellers` },
       {
         name: "description",
         content: "Client contact details and their full repair job history.",

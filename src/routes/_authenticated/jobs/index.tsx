@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/jobs/")({
   head: () => ({
     meta: [
       {
-        title: "Job Status Board | Marvellous Jewellers CRM",
+        title: "Job Status Board | Marvellous Jewellers",
       },
       {
         name: "description",

@@ -21,7 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "Settings | Marvellous Jewellers CRM" },
+      { title: "Settings | Marvellous Jewellers" },
       {
         name: "description",
         content:

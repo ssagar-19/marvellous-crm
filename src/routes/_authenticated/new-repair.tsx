@@ -15,7 +15,7 @@ import { JOB_PRIORITIES, priorityLabels, type ClientDTO } from "@/lib/crm-domain
 export const Route = createFileRoute("/_authenticated/new-repair")({
   head: () => ({
     meta: [
-      { title: "Create Repair Job | Marvellous Jewellers CRM" },
+      { title: "Create Repair Job | Marvellous Jewellers" },
       { name: "description", content: "Book in a new customer repair or service job with photos, notes and an auto-generated job reference." },
       { property: "og:title", content: "Create New Job" },
       { property: "og:description", content: "Add a new customer and job to the system." },

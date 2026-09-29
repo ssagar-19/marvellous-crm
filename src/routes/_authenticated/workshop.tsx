@@ -8,7 +8,7 @@ import { formatDate, workshopColumns, type JobDTO } from "@/lib/crm-domain";
 export const Route = createFileRoute("/_authenticated/workshop")({
   head: () => ({
     meta: [
-      { title: "Workshop Board | Marvellous Jewellers CRM" },
+      { title: "Workshop Board | Marvellous Jewellers" },
       {
         name: "description",
         content: "Jobs currently in the workshop.",

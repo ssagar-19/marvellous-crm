@@ -11,7 +11,7 @@ import type { ClientDTO } from "@/lib/crm-domain";
 export const Route = createFileRoute("/_authenticated/new-bespoke")({
   head: () => ({
     meta: [
-      { title: "Create Bespoke Project | Marvellous Jewellers CRM" },
+      { title: "Create Bespoke Project | Marvellous Jewellers" },
       { name: "description", content: "Create a bespoke jewellery project with design notes, research and inspiration." },
       { property: "og:title", content: "Create Bespoke Project" },
       { property: "og:description", content: "Create a bespoke jewellery project with design notes, research and inspiration." },

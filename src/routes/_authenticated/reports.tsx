@@ -15,7 +15,7 @@ import { PageHeader, ToolButton } from "@/components/app-shell";
 export const Route = createFileRoute("/_authenticated/reports")({
   head: () => ({
     meta: [
-      { title: "Reports | Marvellous Jewellers CRM" },
+      { title: "Reports | Marvellous Jewellers" },
       {
         name: "description",
         content:

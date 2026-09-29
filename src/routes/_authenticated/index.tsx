@@ -25,7 +25,7 @@ import { GlobalSearch } from "@/components/global-search";
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Dashboard | Marvellous Jewellers CRM" },
+      { title: "Dashboard | Marvellous Jewellers" },
       {
         name: "description",
         content: "Marvellous Jewellers CRM dashboard.",
