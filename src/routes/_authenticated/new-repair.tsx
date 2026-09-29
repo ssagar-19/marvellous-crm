@@ -1,7 +1,9 @@
 import { GlassSelect } from "@/components/glass-select";
+import { Calendar } from "@/components/ui/calendar";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { format } from "date-fns";
 import {
   ArrowLeft, User, Gem, FileText, Image as ImageIcon, MessageSquare, Search,
   Barcode, History, Zap, Save, CheckCircle2, Trash2, Info, Lock, Plus, Loader2,
@@ -24,9 +26,9 @@ export const Route = createFileRoute("/_authenticated/new-repair")({
   component: NewJob,
 });
 
-function Card({ step, title, icon: Icon, children, action }: { step?: string; title: string; icon: React.ElementType; children: React.ReactNode; action?: React.ReactNode }) {
+function Card({ step, title, icon: Icon, children, action, className = "" }: { step?: string; title: string; icon: React.ElementType; children: React.ReactNode; action?: React.ReactNode; className?: string }) {
   return (
-    <section className="glass rounded-2xl p-5">
+    <section className={`glass rounded-2xl p-5 ${className}`}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="grid size-9 place-items-center rounded-lg border border-gold/30 bg-gold/10"><Icon className="size-4 text-gold" /></span>
@@ -91,6 +93,7 @@ const SERVICES = [
 ];
 
 function NewJob() {
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [form, setForm] = useState({ ...empty });
   const [items, setItems] = useState<ItemForm[]>([{ ...emptyItem }]);
   const [clientId, setClientId] = useState<string | null>(null);
@@ -467,7 +470,7 @@ function NewJob() {
 
 
 
-          <Card step="3" title="Job Details" icon={FileText}>
+          <Card step="3" title="Job Details" icon={FileText} className="relative z-[70] overflow-visible">
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-sm"><span className="mb-2 block text-muted-foreground">Quoted price</span>
                 <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="0" value={form.quotedPrice} onChange={set("quotedPrice")} onBlur={() => { if (!form.quotedPrice) setForm((f) => ({ ...f, quotedPrice: "0" })); }} />
@@ -475,9 +478,40 @@ function NewJob() {
               <label className="text-sm"><span className="mb-2 block text-muted-foreground">Deposit taken</span>
                 <input className={`${field} appearance-none`} type="number" min="0" step="0.01" placeholder="0" value={form.depositAmount} onChange={set("depositAmount")} onBlur={() => { if (!form.depositAmount) setForm((f) => ({ ...f, depositAmount: "0" })); }} />
               </label>
-              <label className="text-sm"><span className="mb-2 block text-muted-foreground">Promised completion date <span className="text-gold">*</span></span>
-                <input className={field} type="date" value={form.promisedDate} onChange={set("promisedDate")} />
-              </label>
+              <div className="relative text-sm">
+                <span className="mb-2 block text-muted-foreground">Promised completion date <span className="text-gold">*</span></span>
+                <button
+                  type="button"
+                  onClick={() => setCalendarOpen((current) => !current)}
+                  className={`${field} flex items-center justify-between text-left`}
+                >
+                  <span className={form.promisedDate ? "text-foreground" : "text-muted-foreground"}>
+                    {form.promisedDate
+                      ? format(new Date(`${form.promisedDate}T00:00:00`), "dd MMM yyyy")
+                      : "Select date..."}
+                  </span>
+                  <span className="text-gold">▾</span>
+                </button>
+
+                {calendarOpen ? (
+                  <div className="absolute left-0 top-full z-[60] mt-2 overflow-hidden rounded-xl border border-gold/40 bg-[var(--sidebar)] p-2 shadow-xl backdrop-blur-xl">
+                    <Calendar
+                      className="[--cell-size:1.5rem] text-xs"
+                      mode="single"
+                      selected={form.promisedDate ? new Date(`${form.promisedDate}T00:00:00`) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          setForm((current) => ({
+                            ...current,
+                            promisedDate: format(date, "yyyy-MM-dd"),
+                          }));
+                        }
+                        setCalendarOpen(false);
+                      }}
+                    />
+                  </div>
+                ) : null}
+              </div>
               
               <label className="text-sm"><span className="mb-2 block text-muted-foreground">Priority <span className="text-gold">*</span></span>
                 <GlassSelect
