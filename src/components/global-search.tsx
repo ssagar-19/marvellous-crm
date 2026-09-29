@@ -36,7 +36,7 @@ export function GlobalSearch() {
   const showPanel = open && enabled;
 
   return (
-    <div ref={boxRef} className="relative flex-1">
+    <div ref={boxRef} className="relative w-[85%]">
       <label className="glass flex h-12 items-center gap-3 rounded-2xl px-4">
         <Search className="size-[18px] text-gold" />
         <input
@@ -51,11 +51,7 @@ export function GlobalSearch() {
         />
         {isFetching && enabled ? (
           <Loader2 className="size-4 animate-spin text-gold" />
-        ) : (
-          <span className="hidden rounded-md bg-foreground/5 px-2 py-0.5 text-xs text-muted-foreground sm:inline">
-            ⌘ K
-          </span>
-        )}
+        ) : null}
       </label>
 
       {showPanel ? (

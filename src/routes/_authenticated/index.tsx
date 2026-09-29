@@ -115,23 +115,13 @@ function Dashboard() {
 
   return (
     <div className="w-full max-w-none">
-      <div className="mb-8 flex items-end justify-between gap-4">
+      <div className="mb-5 flex items-end justify-between gap-4">
         <div>
-          <div className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString("en-GB", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </div>
-
-          <h1 className="mt-1 font-display text-5xl leading-none">
+          <h1 className="mt-1 font-display text-4xl leading-none">
             Welcome, <span className="gold-text">Divya.</span>
           </h1>
 
           <p className="mt-1 text-base text-muted-foreground">
-            Here’s what’s happening today.
           </p>
         </div>
 

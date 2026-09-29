@@ -44,7 +44,7 @@ function EnquiryDetail() {
       <div className="mb-8 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-4">
-            <h1 className="font-serif text-4xl text-white">
+            <h1 className="font-sans text-4xl text-white">
               {customerName}
             </h1>
 
@@ -97,7 +97,7 @@ function EnquiryDetail() {
             <div className="mb-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <User className="h-5 w-5" />
-                <h3 className="font-serif text-xl">Customer Details</h3>
+                <h3 className="font-sans text-xl">Customer Details</h3>
               </div>
 
               <button className="rounded-xl border border-[#ddd4c3] px-4 py-2 text-base font-medium">
@@ -118,7 +118,7 @@ function EnquiryDetail() {
             <div className="mb-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <MessageSquare className="h-5 w-5" />
-                <h3 className="font-serif text-xl">Enquiry Details</h3>
+                <h3 className="font-sans text-xl">Enquiry Details</h3>
               </div>
 
               <button className="rounded-xl border border-[#ddd4c3] px-4 py-2 text-base font-medium">
@@ -156,7 +156,7 @@ function EnquiryDetail() {
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <FileText className="h-5 w-5" />
-                <h3 className="font-serif text-xl">Internal Notes</h3>
+                <h3 className="font-sans text-xl">Internal Notes</h3>
               </div>
 
               <button className="flex items-center gap-2 rounded-xl border border-[#ddd4c3] px-4 py-2 text-base font-medium">
@@ -191,7 +191,7 @@ function EnquiryDetail() {
             <div className="mb-5 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Image className="h-5 w-5" />
-                <h3 className="font-serif text-xl">Item Photos</h3>
+                <h3 className="font-sans text-xl">Item Photos</h3>
               </div>
 
               <button className="rounded-xl border border-[#ddd4c3] px-4 py-2 text-base font-medium">
@@ -205,7 +205,7 @@ function EnquiryDetail() {
                   key={photo}
                   className="flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-[#ded8cc] bg-gradient-to-br from-[#e8dfd0] via-[#f5efe4] to-[#c8bda9]"
                 >
-                  <span className="font-serif text-4xl text-[#a67c32]/60">
+                  <span className="font-sans text-4xl text-[#a67c32]/60">
                     ◇
                   </span>
                 </div>
@@ -222,7 +222,7 @@ function EnquiryDetail() {
           <section className="rounded-2xl border border-white/10 bg-[#0d3145]/70 p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
             <div className="mb-6 flex items-center gap-3">
               <Clock className="h-5 w-5" />
-              <h3 className="font-serif text-xl">Status</h3>
+              <h3 className="font-sans text-xl">Status</h3>
             </div>
 
             <div className="relative px-3">
@@ -271,7 +271,7 @@ function EnquiryDetail() {
           <section className="rounded-2xl border border-white/10 bg-[#0d3145]/70 p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
             <div className="mb-5 flex items-center gap-3">
               <span className="text-xl text-[#a67c32]">◇</span>
-              <h3 className="font-serif text-xl">Conversion Options</h3>
+              <h3 className="font-sans text-xl">Conversion Options</h3>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -295,7 +295,7 @@ function EnquiryDetail() {
           <section className="rounded-2xl border border-white/10 bg-[#0d3145]/70 p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
             <div className="mb-5 flex items-center gap-3">
               <Clock className="h-5 w-5" />
-              <h3 className="font-serif text-xl">Enquiry History</h3>
+              <h3 className="font-sans text-xl">Enquiry History</h3>
             </div>
 
             <div className="divide-y divide-white/10 rounded-xl border border-white/10 bg-[#0d3145]/70">
@@ -355,7 +355,7 @@ function ConversionCard({
           {icon}
         </div>
 
-        <h4 className="font-serif text-base text-white">{title}</h4>
+        <h4 className="font-sans text-base text-white">{title}</h4>
       </div>
 
       <p className="mb-5 min-h-[48px] text-base leading-5 text-white/60">

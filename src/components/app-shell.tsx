@@ -139,7 +139,7 @@ function TopBar() {
       timeZone: "Europe/London",
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
+      hour12: false,
     }).format(new Date())
   );
 
@@ -150,7 +150,7 @@ function TopBar() {
           timeZone: "Europe/London",
           hour: "numeric",
           minute: "2-digit",
-          hour12: true,
+          hour12: false,
         }).format(new Date())
       );
     };
@@ -163,12 +163,17 @@ function TopBar() {
     <header className="flex items-center gap-4 px-4 pt-5 lg:px-8">
       <GlobalSearch />
 
-      <div className="ml-auto hidden items-center sm:flex">
-        <div className="display-figure flex items-baseline gap-2 text-4xl tracking-wide text-foreground">
-          <span>{time.split(" ")[0]}</span>
-          <span className="text-xl tracking-widest text-gold/90">
-            {time.split(" ")[1]?.toUpperCase()}
-          </span>
+      <div className="ml-auto hidden flex-col items-end leading-none sm:flex">
+        <div className="display-figure text-4xl tracking-wide text-foreground">
+          {time}
+        </div>
+        <div className="mt-1 text-sm font-medium tracking-wide text-foreground/80">
+          {new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Europe/London",
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+          }).format(new Date())}
         </div>
       </div>
     </header>

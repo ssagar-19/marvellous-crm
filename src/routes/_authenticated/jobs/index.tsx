@@ -2,7 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
+  ArrowRight,
   ArrowUpDown,
+  BriefcaseBusiness,
+  CheckCircle2,
+  PackageCheck,
   BarChart3,
   Box,
   Check,
@@ -383,32 +387,22 @@ function JobsBoard() {
                 className="min-w-0"
               >
                 {/* Column Header */}
-                <div className="mb-4">
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="grid size-9 shrink-0 place-items-center rounded-full"
-                      style={{
-                        background: `color-mix(in oklab, ${col.color} 30%, transparent)`,
-                      }}
-                    >
-                      <Icon
-                        className="size-4"
-                        style={{ color: col.color }}
-                      />
-                    </span>
+                <div className="glass mb-4 flex min-h-24 items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-300 hover:border-gold/40 hover:bg-white/[0.07]">
+                  <span
+                    className="grid size-11 shrink-0 place-items-center rounded-full"
+                    style={{ background: `color-mix(in oklab, ${col.color} 30%, transparent)` }}
+                  >
+                    <Icon className="size-5" style={{ color: col.color }} />
+                  </span>
 
-                    <h2 className="font-display text-xl text-foreground">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       {col.label}
-                    </h2>
-
-                    <span className="rounded-full bg-accent/60 px-2.5 py-0.5 text-xs">
-                      {list.length}
-                    </span>
+                    </div>
+                    <div className="display-figure mt-1 text-3xl">{list.length}</div>
                   </div>
 
-                  <p className="mt-1 pl-12 text-xs text-muted-foreground">
-                    {col.blurb}
-                  </p>
+                  <ArrowRight className="ml-auto size-4 text-gold opacity-50" />
                 </div>
 
                 {/* Jobs */}
