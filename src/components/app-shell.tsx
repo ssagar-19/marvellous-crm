@@ -167,7 +167,7 @@ function TopBar() {
         <div className="display-figure text-4xl tracking-wide text-foreground">
           {time}
         </div>
-        <div className="mt-1 text-sm font-medium tracking-wide text-foreground/80">
+        <div className="mt-1 whitespace-nowrap text-sm font-medium tracking-wide text-foreground/80">
           {new Intl.DateTimeFormat("en-GB", {
             timeZone: "Europe/London",
             weekday: "long",
