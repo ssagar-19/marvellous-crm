@@ -10,11 +10,19 @@ export const roleLabels: Record<AppRole, string> = {
   developer: "Developer",
 };
 
+export type StaffProfile = {
+  id: string;
+  fullName: string;
+  email: string;
+  createdAt: string;
+};
+
 export type StaffAccess = {
   userId: string;
   email: string;
   fullName: string;
   roles: AppRole[];
+  profiles: StaffProfile[];
 };
 
 /* ------------------------------- signup ---------------------------------- */
@@ -114,7 +122,7 @@ export const staffSignUp = createServerFn({ method: "POST" })
     const userId = created.user.id;
 
     const { error: profileError } = await supabaseAdmin.from("marvellous_staff_profiles").insert({
-      id: userId,
+      user_id: userId,
       full_name: data.fullName,
       email: data.email,
     });
@@ -156,16 +164,59 @@ export const getMyAccess = createServerFn({ method: "GET" })
     const userId = context.userId;
     const email = (context.claims["email"] as string | undefined) ?? "";
 
-    const [{ data: profile }, { data: roles }] = await Promise.all([
-      context.supabase.from("marvellous_staff_profiles").select("full_name").eq("id", userId).maybeSingle(),
+    const [{ data: profiles }, { data: roles }] = await Promise.all([
+      context.supabase
+        .from("marvellous_staff_profiles")
+        .select("id, user_id, full_name, email, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
       context.supabase.from("marvellous_user_roles").select("role").eq("user_id", userId),
     ]);
+
+    const mappedProfiles: StaffProfile[] = (profiles ?? []).map((profile) => ({
+      id: profile.id,
+      fullName: profile.full_name,
+      email: profile.email,
+      createdAt: profile.created_at,
+    }));
 
     return {
       userId,
       email,
-      fullName: profile?.full_name ?? email,
+      fullName: mappedProfiles[0]?.fullName ?? email,
       roles: (roles ?? []).map((r) => r.role as AppRole),
+      profiles: mappedProfiles,
+    };
+  });
+
+export const createStaffProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      fullName: z.string().trim().min(2, "Enter your name."),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }): Promise<StaffProfile> => {
+    const email = (context.claims["email"] as string | undefined) ?? "";
+    const { data: profile, error } = await context.supabase
+      .from("marvellous_staff_profiles")
+      .insert({
+        user_id: context.userId,
+        full_name: data.fullName,
+        email,
+      })
+      .select("id, user_id, full_name, email, created_at")
+      .single();
+
+    if (error || !profile) {
+      throw new Error(error?.message ?? "Could not create your profile.");
+    }
+
+    return {
+      id: profile.id,
+      fullName: profile.full_name,
+      email: profile.email,
+      createdAt: profile.created_at,
     };
   });
 
@@ -197,7 +248,7 @@ export const listStaffAccounts = createServerFn({ method: "GET" })
     const [{ data: profiles, error }, { data: roles }] = await Promise.all([
       context.supabase
         .from("marvellous_staff_profiles")
-        .select("id, full_name, email, created_at")
+        .select("id, user_id, full_name, email, created_at")
         .order("created_at", { ascending: true }),
       context.supabase.from("marvellous_user_roles").select("user_id, role"),
     ]);
@@ -207,7 +258,7 @@ export const listStaffAccounts = createServerFn({ method: "GET" })
       fullName: p.full_name,
       email: p.email,
       createdAt: p.created_at,
-      roles: (roles ?? []).filter((r) => r.user_id === p.id).map((r) => r.role as AppRole),
+      roles: (roles ?? []).filter((r) => r.user_id === p.user_id).map((r) => r.role as AppRole),
     }));
   });
 

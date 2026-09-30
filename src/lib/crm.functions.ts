@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import {
@@ -89,14 +90,41 @@ function toJobDTO(row: RawJob): JobDTO {
 
 async function staffName(context: AuthContext) {
   const userId = context.claims["sub"] as string | undefined;
+  const cookieHeader = getRequest()?.headers.get("cookie") ?? "";
+  const profileMatch = cookieHeader.match(
+    /(?:^|;\s*)marvellous_profile_id=([^;]+)/,
+  );
+
+  let profileId: string | undefined;
+  if (profileMatch?.[1]) {
+    try {
+      profileId = decodeURIComponent(profileMatch[1]);
+    } catch {
+      profileId = undefined;
+    }
+  }
+
+  if (userId && profileId) {
+    const { data } = await context.supabase
+      .from("marvellous_staff_profiles")
+      .select("full_name")
+      .eq("id", profileId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (data?.full_name) return data.full_name;
+  }
+
   if (userId) {
     const { data } = await context.supabase
       .from("marvellous_staff_profiles")
       .select("full_name")
-      .eq("id", userId)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true })
+      .limit(1)
       .maybeSingle();
     if (data?.full_name) return data.full_name;
   }
+
   const email = context.claims["email"];
   return typeof email === "string" ? email : "Staff";
 }

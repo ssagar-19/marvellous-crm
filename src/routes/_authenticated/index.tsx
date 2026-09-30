@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -21,6 +22,8 @@ import {
 } from "@/lib/crm-domain";
 import jewellerySheet from "@/assets/jewellery-sheet.jpg";
 import { GlobalSearch } from "@/components/global-search";
+import { myAccessQuery } from "@/lib/auth-queries";
+import { readActiveStaffProfileId } from "@/lib/staff-profile";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -82,6 +85,23 @@ const collectedStatuses: JobStatus[] = ["COLLECTED"];
 
 function Dashboard() {
   const { data: jobs } = useSuspenseQuery(jobsQuery);
+  const { data: access } = useQuery(myAccessQuery);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sync = () => setActiveProfileId(readActiveStaffProfileId());
+    sync();
+    window.addEventListener("marvellous-profile-changed", sync);
+    return () => window.removeEventListener("marvellous-profile-changed", sync);
+  }, []);
+
+  const activeProfile = access?.profiles?.find(
+    (profile) => profile.id === activeProfileId,
+  );
+  const welcomeName =
+    activeProfile?.fullName ||
+    access?.fullName ||
+    "there";
   const stats = [
     {
       label: "Received",
@@ -118,7 +138,7 @@ function Dashboard() {
       <div className="mb-5 flex items-end justify-between gap-4">
         <div>
           <h1 className="mt-1 font-display text-4xl leading-none">
-            Welcome, <span className="gold-text">Divya.</span>
+            Welcome, <span className="gold-text">{welcomeName}.</span>
           </h1>
 
           <p className="mt-1 text-base text-foreground/80">

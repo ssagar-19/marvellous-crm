@@ -3,8 +3,13 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalSearch } from "@/components/global-search";
 import { supabase } from "@/integrations/supabase/client";
-import { roleLabels } from "@/lib/auth.functions";
+import { createStaffProfile, roleLabels } from "@/lib/auth.functions";
 import { myAccessQuery } from "@/lib/auth-queries";
+import {
+  clearActiveStaffProfile,
+  readActiveStaffProfileId,
+  setActiveStaffProfileId,
+} from "@/lib/staff-profile";
 import marvellousLogo from "@/assets/marvellous-logo-mark.png";
 
 import {
@@ -40,6 +45,206 @@ export function Logo() {
         alt="Marvellous Jewellers"
         className="size-11 object-contain"
       />
+    </div>
+  );
+}
+
+function ProfileGate({ children }: { children: ReactNode }) {
+  const { data, isPending, refetch } = useQuery(myAccessQuery);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setActiveProfileId(readActiveStaffProfileId());
+    sync();
+    window.addEventListener("marvellous-profile-changed", sync);
+    return () => window.removeEventListener("marvellous-profile-changed", sync);
+  }, []);
+
+  useEffect(() => {
+    if (
+      !data ||
+      activeProfileId ||
+      data.profiles.length !== 1 ||
+      !data.roles.includes("developer")
+    ) {
+      return;
+    }
+
+    const profileId = data.profiles[0]?.id;
+    if (profileId) {
+      setActiveStaffProfileId(profileId);
+      setActiveProfileId(profileId);
+    }
+  }, [data, activeProfileId]);
+
+  if (isPending || !data) return <>{children}</>;
+
+  const activeProfile = data.profiles.find(
+    (profile) => profile.id === activeProfileId,
+  );
+
+  if (activeProfile) return <>{children}</>;
+
+  const role = data.roles[0];
+  const roleLabel = role ? roleLabels[role] ?? "Staff" : "Staff";
+
+  async function handleCreateProfile(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+
+    const name = fullName.trim();
+    if (name.length < 2) {
+      setError("Enter your name.");
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const profile = await createStaffProfile({
+        data: { fullName: name },
+      });
+
+      await refetch();
+      setActiveStaffProfileId(profile.id);
+      setActiveProfileId(profile.id);
+      setFullName("");
+      setCreating(false);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not create your profile.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] grid place-items-center bg-[var(--navy-deep)]/45 px-4 backdrop-blur-md">
+      <motion.div
+        initial={{ opacity: 0, y: 12, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="glass w-full max-w-xl rounded-3xl p-7 shadow-2xl"
+      >
+        <div className="text-center">
+          <h2 className="font-display text-3xl">
+            {data.profiles.length === 0
+              ? "Create your profile"
+              : "Who's using Marvellous?"}
+          </h2>
+          <p className="mt-2 text-sm text-foreground/80">
+            {data.profiles.length === 0
+              ? "Create your staff profile to continue."
+              : "Select your profile so Marvellous can personalise your workspace."}
+          </p>
+        </div>
+
+        {creating || data.profiles.length === 0 ? (
+          <form onSubmit={handleCreateProfile} className="mt-7 space-y-4">
+            <label className="block text-sm">
+              <span className="mb-2 block text-xs font-medium uppercase tracking-widest text-foreground/80">
+                Your name
+              </span>
+              <input
+                autoFocus
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
+                placeholder="e.g. Divya"
+                className="h-11 w-full rounded-xl border border-border bg-[var(--navy-deep)]/45 px-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-gold/60"
+              />
+            </label>
+
+            <div className="glass-inset rounded-xl px-4 py-3 text-sm">
+              <span className="text-foreground/80">Access level</span>
+              <span className="float-right font-medium text-gold">{roleLabel}</span>
+            </div>
+
+            {error ? (
+              <p className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {error}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="btn-gold flex h-11 w-full items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {busy ? "Creating…" : "Create profile"}
+            </button>
+
+            {data.profiles.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setCreating(false);
+                  setFullName("");
+                  setError(null);
+                }}
+                className="w-full text-sm text-foreground/70 transition-colors hover:text-foreground"
+              >
+                Back to profiles
+              </button>
+            ) : null}
+          </form>
+        ) : (
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            {data.profiles.map((profile) => (
+              <button
+                key={profile.id}
+                type="button"
+                onClick={() => {
+                  setActiveStaffProfileId(profile.id);
+                  setActiveProfileId(profile.id);
+                }}
+                className="group glass-inset flex items-center gap-4 rounded-2xl p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/40 hover:bg-white/[0.08]"
+              >
+                <span className="grid size-12 shrink-0 place-items-center rounded-xl border border-gold/25 bg-gold/10 text-sm font-semibold text-gold">
+                  {profile.fullName
+                    .split(/\s+/)
+                    .map((part) => part[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()}
+                </span>
+
+                <span className="min-w-0">
+                  <span className="block font-display text-xl">
+                    {profile.fullName}
+                  </span>
+                  <span className="mt-1 block text-xs font-medium uppercase tracking-widest text-foreground/70">
+                    {roleLabel}
+                  </span>
+                </span>
+              </button>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                setCreating(true);
+                setError(null);
+              }}
+              className="glass-inset flex items-center gap-4 rounded-2xl p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.08]"
+            >
+              <span className="grid size-12 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/[0.06] text-2xl text-gold">
+                +
+              </span>
+              <span>
+                <span className="block font-display text-xl">Add profile</span>
+                <span className="mt-1 block text-xs font-medium uppercase tracking-widest text-foreground/70">
+                  Shared account
+                </span>
+              </span>
+            </button>
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }
@@ -118,16 +323,31 @@ function SidebarAccount() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data, isPending } = useQuery(myAccessQuery);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sync = () => setActiveProfileId(readActiveStaffProfileId());
+    sync();
+    window.addEventListener("marvellous-profile-changed", sync);
+    return () => window.removeEventListener("marvellous-profile-changed", sync);
+  }, []);
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
+    clearActiveStaffProfile();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
 
+  const activeProfile = data?.profiles?.find(
+    (profile) => profile.id === activeProfileId,
+  );
   const name =
-    data?.fullName || data?.email || (isPending ? "Loading…" : "Signed in");
+    activeProfile?.fullName ||
+    data?.fullName ||
+    data?.email ||
+    (isPending ? "Loading…" : "Signed in");
   const role = data?.roles?.[0] ? roleLabels[data.roles[0]] : "Staff";
 
   return (
@@ -209,7 +429,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col lg:pl-20">
         <TopBar />
 
-        <main className="flex-1 px-4 pb-10 pt-6 lg:px-8">{children}</main>
+        <ProfileGate>
+          <main className="flex-1 px-4 pb-10 pt-6 lg:px-8">{children}</main>
+        </ProfileGate>
 
         <footer className="hairline-none px-8 pb-5 text-right text-xs text-muted-foreground">
           Marvellous Jewellers &nbsp;|&nbsp; CRM System &nbsp;|&nbsp; v1.0.0
