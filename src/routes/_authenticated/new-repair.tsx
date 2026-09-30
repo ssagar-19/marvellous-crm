@@ -354,7 +354,7 @@ function NewJob() {
             ) : null}
           </Card>
 
-          <Card step="2" title="Items" icon={Gem}>
+          <Card step="2" title="Items" icon={Gem} className="relative z-[80] overflow-visible">
             <div className="space-y-4">
               {items.map((item, index) => (
                 <div key={index} className="glass-inset rounded-xl p-4">
