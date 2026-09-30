@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalSearch } from "@/components/global-search";
@@ -45,12 +46,27 @@ export function Logo() {
 
 function Sidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [hovered, setHovered] = useState<string | null>(null);
 
   return (
     <aside
       className="hidden fixed left-5 top-1/2 z-50 -translate-y-1/2 flex-col items-center rounded-2xl border border-white/15 bg-white/[0.045] px-2.5 py-3 shadow-[0_20px_60px_oklch(0.02_0.02_245/0.28)] backdrop-blur-xl lg:flex"
     >
-      <nav className="flex flex-col items-center gap-2">
+      <nav
+        className="relative flex flex-col items-center gap-2"
+        onMouseLeave={() => setHovered(null)}
+      >
+        {hovered ? (
+          <motion.div
+            layoutId="sidebar-hover"
+            className="pointer-events-none absolute left-0 top-0 size-11 rounded-xl border border-white/15 bg-white/[0.09] shadow-[0_8px_30px_oklch(0.95_0.02_245/0.08)] backdrop-blur-xl"
+            animate={{
+              y: nav.findIndex((item) => item.to === hovered) * 52,
+            }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+          />
+        ) : null}
+
         {nav.map((item) => {
           const active =
             item.to === "/"
@@ -62,11 +78,12 @@ function Sidebar() {
               <Link
                 to={item.to}
                 aria-label={item.label}
+                onMouseEnter={() => setHovered(item.to)}
                 className={
                   "group absolute inset-0 flex size-11 items-center justify-center rounded-xl border transition-[background-color,border-color,box-shadow] duration-150 " +
                   (active
                     ? "border-gold/30 bg-gold/10 text-foreground shadow-[0_8px_24px_oklch(0.75_0.12_85/0.08)]"
-                    : "border-transparent bg-transparent text-muted-foreground hover:border-white/12 hover:bg-white/[0.07]")
+                    : "border-transparent bg-transparent text-muted-foreground")
                 }
               >
                 <item.icon
@@ -114,7 +131,7 @@ function SidebarAccount() {
   const role = data?.roles?.[0] ? roleLabels[data.roles[0]] : "Staff";
 
   return (
-    <div className="glass-tile rounded-2xl p-2">
+    <div className="p-2">
       <div className="flex justify-center">
         <div className="grid size-9 place-items-center rounded-full border border-gold/30 text-xs font-semibold text-gold">
           {data ? (data.fullName || data.email || "MJ").split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase() : "MJ"}

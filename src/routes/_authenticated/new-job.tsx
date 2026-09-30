@@ -28,8 +28,8 @@ function NewJobPage() {
             to="/new-repair"
             className="glass group rounded-2xl p-8 transition-transform hover:-translate-y-1"
           >
-            <div className="mb-6 flex size-14 items-center justify-center rounded-xl bg-muted">
-              <Wrench className="size-6 text-gold" />
+            <div className="mb-6 flex size-14 items-center justify-center rounded-xl border border-white/15 bg-white/[0.09] shadow-[0_8px_30px_oklch(0.95_0.02_245/0.08)] backdrop-blur-xl">
+              <Wrench className="size-6 text-gold/70" />
             </div>
 
             <h2 className="font-display text-2xl">
@@ -47,8 +47,8 @@ function NewJobPage() {
           </Link>
 
           <Link to="/new-bespoke" className="glass group block rounded-2xl p-8 transition-transform hover:-translate-y-1">
-            <div className="mb-6 flex size-14 items-center justify-center rounded-xl bg-muted">
-              <Gem className="size-6 text-gold" />
+            <div className="mb-6 flex size-14 items-center justify-center rounded-xl border border-white/15 bg-white/[0.09] shadow-[0_8px_30px_oklch(0.95_0.02_245/0.08)] backdrop-blur-xl">
+              <Gem className="size-6 text-gold/70" />
             </div>
 
             <h2 className="font-display text-2xl">

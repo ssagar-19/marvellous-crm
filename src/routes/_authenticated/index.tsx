@@ -121,7 +121,7 @@ function Dashboard() {
             Welcome, <span className="gold-text">Divya.</span>
           </h1>
 
-          <p className="mt-1 text-base text-muted-foreground">
+          <p className="mt-1 text-base text-foreground/80">
           </p>
         </div>
 
@@ -135,14 +135,14 @@ function Dashboard() {
           <Link
             key={label}
             to="/jobs"
-            className="glass group flex min-h-24 items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-300 hover:border-gold/40 hover:bg-white/[0.07]"
+            className="glass group flex min-h-24 items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/40 hover:bg-white/[0.07]"
           >
-            <span className="glass-gold grid size-11 shrink-0 place-items-center rounded-full">
-              <Icon className="size-5 text-gold" />
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/[0.09] shadow-[0_8px_30px_oklch(0.95_0.02_245/0.08)] backdrop-blur-xl">
+              <Icon className="size-5 text-gold/70" />
             </span>
 
             <div>
-              <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                 {label}
               </div>
               <div className="display-figure mt-1 text-3xl">{value}</div>
@@ -157,15 +157,15 @@ function Dashboard() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <span className="glass-gold grid size-9 place-items-center rounded-full">
-                <Clock3 className="size-4 text-gold" />
+              <span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/[0.09] shadow-[0_8px_30px_oklch(0.95_0.02_245/0.08)] backdrop-blur-xl">
+                <Clock3 className="size-4 text-gold/70" />
               </span>
 
               <div>
                 <h2 className="font-display text-2xl leading-none">
                   Recent Jobs
                 </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-foreground/80">
                   The latest jobs entered into Marvellous.
                 </p>
               </div>
@@ -184,7 +184,7 @@ function Dashboard() {
         <div className="mt-5 overflow-x-auto">
           <div className="min-w-[760px] space-y-2">
             {recentJobs.length === 0 ? (
-              <p className="px-3 py-8 text-sm text-muted-foreground">
+              <p className="px-3 py-8 text-sm text-foreground/80">
                 No jobs have been created yet.
               </p>
             ) : (
@@ -213,19 +213,19 @@ function Dashboard() {
 
                   <span>
                     <b className="font-medium">{job.clientName}</b>
-                    <span className="ml-2 text-xs text-muted-foreground">
+                    <span className="ml-2 text-xs text-foreground/80">
                       {job.clientPhone}
                     </span>
                   </span>
 
                   <span>
                     {job.itemType}
-                    <span className="ml-2 text-xs text-muted-foreground">
+                    <span className="ml-2 text-xs text-foreground/80">
                       {job.service}
                     </span>
                   </span>
 
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-foreground/80">
                     {locationLabels[job.location]}
                   </span>
 

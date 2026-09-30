@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "motion/react";
 
 type GlassSelectProps = {
   value: string;
@@ -16,6 +17,7 @@ export function GlassSelect({
   className = "",
 }: GlassSelectProps) {
   const [open, setOpen] = useState(false);
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null);
 
   const selected = options.find((option) => option.value === value);
 
@@ -52,16 +54,25 @@ export function GlassSelect({
                   onChange(option.value);
                   setOpen(false);
                 }}
+                onMouseEnter={() => setHoveredOption(option.value)}
+                onMouseLeave={() => setHoveredOption(null)}
                 className={
-                  "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors " +
+                  "relative flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors " +
                   (value === option.value
-                    ? "bg-gold/15 text-gold"
-                    : "text-foreground hover:bg-white/5")
+                    ? "text-gold"
+                    : "text-foreground")
                 }
               >
-                <span>{option.label}</span>
+                {hoveredOption === option.value ? (
+                  <motion.div
+                    layoutId="glass-select-hover"
+                    className="pointer-events-none absolute inset-0 rounded-lg border border-white/15 bg-white/[0.09] shadow-[0_8px_30px_oklch(0.95_0.02_245/0.08)] backdrop-blur-xl"
+                    transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                  />
+                ) : null}
+                <span className="relative z-10">{option.label}</span>
                 {value === option.value ? (
-                  <span className="text-gold">✓</span>
+                  <span className="relative z-10 text-gold">✓</span>
                 ) : null}
               </button>
             ))}

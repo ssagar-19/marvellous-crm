@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search, User, Wrench } from "lucide-react";
+import { motion } from "motion/react";
 import { globalSearch } from "@/lib/crm.functions";
 import { locationLabels, statusLabels, statusTone, toneColor } from "@/lib/crm-domain";
 
@@ -10,6 +11,7 @@ export function GlobalSearch() {
   const [debounced, setDebounced] = useState("");
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  const [hoveredResult, setHoveredResult] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(term.trim()), 250);
@@ -77,9 +79,18 @@ export function GlobalSearch() {
                       to="/jobs/$ref"
                       params={{ ref: j.reference }}
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-2 py-2 text-sm hover:bg-accent/40"
+                      onMouseEnter={() => setHoveredResult(`job:${j.reference}`)}
+                      onMouseLeave={() => setHoveredResult(null)}
+                      className="relative flex items-center gap-3 rounded-xl px-2 py-2 text-sm"
                     >
-                      <Wrench className="size-4 shrink-0 text-gold" />
+                      {hoveredResult === `job:${j.reference}` ? (
+                        <motion.div
+                          layoutId="global-search-hover"
+                          className="pointer-events-none absolute inset-0 rounded-xl border border-white/15 bg-white/[0.09] shadow-[0_8px_30px_oklch(0.95_0.02_245/0.08)] backdrop-blur-xl"
+                          transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                        />
+                      ) : null}
+                      <Wrench className="relative z-10 size-4 shrink-0 text-gold" />
                       <span className="min-w-0">
                         <b className="block font-medium">
                           {j.reference} · {j.title}

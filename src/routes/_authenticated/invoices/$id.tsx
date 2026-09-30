@@ -278,7 +278,7 @@ function InvoicePage() {
   <div className="glass mb-6 rounded-2xl p-4">
     <div className="mb-3 flex items-center justify-between">
       <div>
-        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
           PDF Preview
         </p>
         <p className="mt-1 text-sm">
@@ -315,7 +315,7 @@ function InvoicePage() {
           <section className="glass rounded-2xl p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
                   Invoice Details
                 </p>
                 <h2 className="mt-1 font-display text-xl">
@@ -330,7 +330,7 @@ function InvoicePage() {
 
             <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <label className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Invoice Number
                 </label>
                 <div className="mt-2 rounded-lg border border-white/10 bg-black/10 px-3 py-2.5 text-sm">
@@ -339,7 +339,7 @@ function InvoicePage() {
               </div>
 
               <div>
-                <label className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Invoice Date
                 </label>
                 <div className="mt-2 rounded-lg border border-white/10 bg-black/10 px-3 py-2.5 text-sm">
@@ -348,7 +348,7 @@ function InvoicePage() {
               </div>
 
               <div>
-                <label className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <label className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Due Date
                 </label>
                 <input
@@ -364,7 +364,7 @@ function InvoicePage() {
           {/* Customer */}
           <section className="glass rounded-2xl p-6">
             <div className="mb-5">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
                 Bill To
               </p>
               <h2 className="mt-1 font-display text-xl">
@@ -374,7 +374,7 @@ function InvoicePage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Name
                 </p>
                 <p className="mt-2 text-base">
@@ -383,7 +383,7 @@ function InvoicePage() {
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Phone
                 </p>
                 <p className="mt-2 text-base">
@@ -392,7 +392,7 @@ function InvoicePage() {
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Email
                 </p>
                 <p className="mt-2 text-base">
@@ -401,7 +401,7 @@ function InvoicePage() {
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Postcode
                 </p>
                 <p className="mt-2 text-base">
@@ -414,7 +414,7 @@ function InvoicePage() {
           {/* Job */}
           <section className="glass rounded-2xl p-6">
             <div className="mb-5">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
                 Job
               </p>
               <h2 className="mt-1 font-display text-xl">
@@ -424,21 +424,21 @@ function InvoicePage() {
 
             <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Reference
                 </p>
                 <p className="mt-2">{job.reference}</p>
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Item
                 </p>
                 <p className="mt-2">{job.itemType}</p>
               </div>
 
               <div>
-                <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                   Service
                 </p>
                 <p className="mt-2">{job.service}</p>
@@ -446,7 +446,7 @@ function InvoicePage() {
             </div>
 
             <div className="mt-5 rounded-xl border border-white/10 p-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-foreground/80">
                 Description
               </p>
               <p className="mt-2 text-sm leading-6">
@@ -459,7 +459,7 @@ function InvoicePage() {
           <section className="glass rounded-2xl p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
                   Charges
                 </p>
                 <h2 className="mt-1 font-display text-xl">
@@ -556,7 +556,7 @@ function InvoicePage() {
           {/* Notes */}
           <section className="glass rounded-2xl p-6">
             <div className="mb-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
                 Notes
               </p>
               <h2 className="mt-1 font-display text-xl">
@@ -578,7 +578,7 @@ function InvoicePage() {
         <aside className="h-fit space-y-6 xl:sticky xl:top-6">
           <section className="glass rounded-2xl p-6">
             <div className="mb-5">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
                 Summary
               </p>
               <h2 className="mt-1 font-display text-xl">
@@ -694,7 +694,7 @@ function InvoicePage() {
           </section>
 
           <section className="glass rounded-2xl p-6">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-foreground/80">
               Invoice Status
             </p>
 

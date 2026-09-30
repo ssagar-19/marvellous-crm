@@ -179,10 +179,6 @@ function JobDetail() {
 
         <div className="mx-auto flex min-w-[360px] max-w-[760px] flex-1 self-center translate-y-3 items-center">
           <div className="relative flex w-full items-start">
-            <div className="absolute left-4 right-4 top-4 flex h-px items-center">
-              <span className="h-px w-full bg-gold/20" />
-            </div>
-
             {progressStages.map((s, i) => {
               const done = currentStage >= 0 && i < currentStage;
               const current = i === currentStage;
@@ -199,6 +195,22 @@ function JobDetail() {
                   }}
                   className="relative z-10 flex flex-1 flex-col items-center text-center"
                 >
+                  {i < progressStages.length - 1 ? (
+                    <span
+                      className="pointer-events-none absolute left-[calc(50%+16px)] right-[calc(-50%+16px)] top-4 h-px bg-gold/20"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+
+                  {i < progressStages.length - 1 ? (
+                    <motion.span
+                      className="pointer-events-none absolute left-[calc(50%+16px)] right-[calc(-50%+16px)] top-4 h-px origin-left bg-gold/65"
+                      animate={{ scaleX: i < currentStage ? 1 : 0 }}
+                      transition={{ type: "spring", stiffness: 220, damping: 26 }}
+                      aria-hidden="true"
+                    />
+                  ) : null}
+
                   <motion.span
                     animate={
                       current
