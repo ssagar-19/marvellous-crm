@@ -84,6 +84,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Repair and workshop management for Marvellous Jewellers — jobs, clients, messages and reports.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:title", content: "Marvellous Jewellers CRM" },
+      { property: "og:description", content: "Repair and workshop management for Marvellous Jewellers." },
+      { property: "og:image", content: "/assets/marvellous-logo-mark.png" },
+      { property: "og:image:alt", content: "Marvellous Jewellers" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -102,7 +106,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/src/assets/marvellous-logo-mark.png", type: "image/png" },
     ],
   }),
   shellComponent: RootShell,

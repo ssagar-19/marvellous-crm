@@ -64,7 +64,7 @@
   --gold-soft: oklch(0.8795 0.0555 87);
   --gold-deep: oklch(0.7479 0.0986 86.1);
 
-  --background: var(--azure-dark);
+  --background: var(--azure-soft);
   --foreground: var(--soft-white);
   --card: var(--azure-mid);
   --card-foreground: var(--soft-white);
@@ -153,7 +153,7 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: #143F59;
+  background: var(--azure-soft);
 }
 
 .app-bg::before {
@@ -574,4 +574,10 @@ input[type="number"] {
   .skeleton-shimmer::after {
     animation: none;
   }
+}
+
+/* Plain Dark Azure workspace background */
+.app-bg::before,
+.app-bg::after {
+  background: none !important;
 }
