@@ -5,7 +5,7 @@ import {
   ArrowLeft, User, Gem, FileText, Image as ImageIcon, MessageSquare, Search,
   Barcode, History, Zap, Save, CheckCircle2, Trash2, Info, Lock, Plus, Loader2,
 } from "lucide-react";
-import { searchClients } from "@/lib/crm.functions";
+import { createBespokeProject, searchClients } from "@/lib/crm.functions";
 import type { ClientDTO } from "@/lib/crm-domain";
 
 export const Route = createFileRoute("/_authenticated/new-bespoke")({
@@ -63,6 +63,8 @@ type InspirationImage = {
 };
 
 function NewJob() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState({ ...empty });
   const [clientId, setClientId] = useState<string | null>(null);
   const [matches, setMatches] = useState<ClientDTO[] | null>(null);
@@ -70,6 +72,8 @@ function NewJob() {
   const [images, setImages] = useState<InspirationImage[]>([]);
   const [status, setStatus] = useState("Enquiry");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedReference, setSavedReference] = useState<string | null>(null);
 
   const set = (key: keyof typeof empty) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -405,16 +409,39 @@ function NewJob() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => setSaved(true)}
-                className="glass-gold flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm text-gold"
+                disabled={saving || saved}
+                onClick={async () => {
+                  setSaving(true);
+                  try {
+                    const result = await createBespokeProject({
+                      data: {
+                        clientId,
+                        ...form,
+                        status,
+                      },
+                    });
+                    setSaved(true);
+                    setSavedReference(result.reference);
+                    await queryClient.invalidateQueries({
+                      queryKey: ["bespoke-projects"],
+                    });
+                    await navigate({
+                      to: "/bespoke/$ref",
+                      params: { ref: result.reference },
+                    });
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                className="glass-gold flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm text-gold disabled:opacity-60"
               >
-                <Save className="size-4" />
-                Save Bespoke Project
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                {saving ? "Saving…" : "Save Bespoke Project"}
               </button>
 
               {saved ? (
                 <div className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-center text-sm text-gold">
-                  Temporary project saved for this session.
+                  Project saved as {savedReference}.
                 </div>
               ) : null}
             </div>

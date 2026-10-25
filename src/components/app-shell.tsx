@@ -15,6 +15,7 @@ import marvellousLogo from "@/assets/marvellous-logo-mark.png";
 import {
   Home,
   ClipboardList,
+  Gem,
   PlusCircle,
   Wrench,
   BarChart3,
@@ -31,6 +32,7 @@ const nav: { label: string; to: string; icon: LucideIcon; badge?: number }[] = [
   { label: "Home", to: "/", icon: Home },
   { label: "New Job", to: "/new-job", icon: PlusCircle },
   { label: "Jobs", to: "/jobs", icon: ClipboardList },
+  { label: "Bespoke", to: "/bespoke", icon: Gem },
   { label: "Workshop", to: "/workshop", icon: Wrench },
   { label: "Reports", to: "/reports", icon: BarChart3 },
   { label: "Enquiries", to: "/enquiries", icon: Mail },

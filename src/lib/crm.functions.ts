@@ -229,6 +229,83 @@ const createJobSchema = z.object({
   isDraft: z.boolean().optional().default(false),
 });
 
+export const listBespokeProjects = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const db = context.supabase as any;
+    const { data, error } = await db
+      .from("marvellous_bespoke_projects")
+      .select("id, project_reference, full_name, project_name, piece_type, status, next_action, next_action_date, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const getBespokeProjectByRef = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ ref: z.string().trim().min(1) }).parse(d)
+  )
+  .handler(async ({ data, context }) => {
+    const db = context.supabase as any;
+
+    const { data: project, error } = await db
+      .from("marvellous_bespoke_projects")
+      .select("*")
+      .eq("project_reference", data.ref)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return project;
+  });
+
+export const createBespokeProject = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      clientId: z.string().uuid().nullable().optional(),
+      fullName: z.string().trim().min(2, "Customer name is required"),
+      phone: z.string().trim().optional().default(""),
+      email: z.string().trim().email("Enter a valid email address").or(z.literal("")).optional(),
+      projectName: z.string().trim().optional().default(""),
+      pieceType: z.string().trim().optional().default(""),
+      brief: z.string().trim().optional().default(""),
+      research: z.string().trim().optional().default(""),
+      notes: z.string().trim().optional().default(""),
+      nextAction: z.string().trim().optional().default(""),
+      nextActionDate: z.string().trim().optional().default(""),
+      status: z.string().trim().min(1).default("Enquiry"),
+    }).parse(d)
+  )
+  .handler(async ({ data, context }): Promise<{ reference: string }> => {
+    const db = context.supabase as any;
+    const staff = await staffName(context as AuthContext);
+
+    const { data: project, error } = await db
+      .from("marvellous_bespoke_projects")
+      .insert({
+        client_id: data.clientId ?? null,
+        full_name: data.fullName,
+        phone: data.phone,
+        email: data.email?.trim() ? data.email.trim() : null,
+        project_name: data.projectName,
+        piece_type: data.pieceType,
+        brief: data.brief,
+        research: data.research,
+        notes: data.notes,
+        next_action: data.nextAction,
+        next_action_date: data.nextActionDate || null,
+        status: data.status.toUpperCase(),
+        created_by: staff,
+      })
+      .select("project_reference")
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    return { reference: project.project_reference };
+  });
+
 export const createJob = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => createJobSchema.parse(d))
   .handler(async ({ data, context }): Promise<{ reference: string }> => {

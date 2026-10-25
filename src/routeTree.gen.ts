@@ -21,6 +21,8 @@ import { Route as AuthenticatedOutlookRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedWorkshopRouteImport } from './routes/_authenticated/workshop'
+import { Route as AuthenticatedBespokeIndexRouteImport } from './routes/_authenticated/bespoke/index'
+import { Route as AuthenticatedBespokeRefRouteImport } from './routes/_authenticated/bespoke/$ref'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients/$id'
 import { Route as AuthenticatedEnquiriesIndexRouteImport } from './routes/_authenticated/enquiries/index'
@@ -88,6 +90,17 @@ const AuthenticatedWorkshopRoute = AuthenticatedWorkshopRouteImport.update({
   path: '/workshop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBespokeIndexRoute =
+  AuthenticatedBespokeIndexRouteImport.update({
+    id: '/bespoke/',
+    path: '/bespoke/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBespokeRefRoute = AuthenticatedBespokeRefRouteImport.update({
+  id: '/bespoke/$ref',
+  path: '/bespoke/$ref',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
@@ -139,10 +152,12 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/workshop': typeof AuthenticatedWorkshopRoute
+  '/bespoke/$ref': typeof AuthenticatedBespokeRefRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/enquiries/$id': typeof AuthenticatedEnquiriesIdRoute
   '/invoices/$id': typeof AuthenticatedInvoicesIdRoute
   '/jobs/$ref': typeof AuthenticatedJobsRefRoute
+  '/bespoke/': typeof AuthenticatedBespokeIndexRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
   '/jobs/': typeof AuthenticatedJobsIndexRoute
@@ -158,10 +173,12 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/workshop': typeof AuthenticatedWorkshopRoute
   '/': typeof AuthenticatedIndexRoute
+  '/bespoke/$ref': typeof AuthenticatedBespokeRefRoute
   '/clients/$id': typeof AuthenticatedClientsIdRoute
   '/enquiries/$id': typeof AuthenticatedEnquiriesIdRoute
   '/invoices/$id': typeof AuthenticatedInvoicesIdRoute
   '/jobs/$ref': typeof AuthenticatedJobsRefRoute
+  '/bespoke': typeof AuthenticatedBespokeIndexRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/enquiries': typeof AuthenticatedEnquiriesIndexRoute
   '/jobs': typeof AuthenticatedJobsIndexRoute
@@ -180,10 +197,12 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/workshop': typeof AuthenticatedWorkshopRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/bespoke/$ref': typeof AuthenticatedBespokeRefRoute
   '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRoute
   '/_authenticated/enquiries/$id': typeof AuthenticatedEnquiriesIdRoute
   '/_authenticated/invoices/$id': typeof AuthenticatedInvoicesIdRoute
   '/_authenticated/jobs/$ref': typeof AuthenticatedJobsRefRoute
+  '/_authenticated/bespoke/': typeof AuthenticatedBespokeIndexRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/enquiries/': typeof AuthenticatedEnquiriesIndexRoute
   '/_authenticated/jobs/': typeof AuthenticatedJobsIndexRoute
@@ -202,10 +221,12 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/workshop'
+    | '/bespoke/$ref'
     | '/clients/$id'
     | '/enquiries/$id'
     | '/invoices/$id'
     | '/jobs/$ref'
+    | '/bespoke/'
     | '/clients/'
     | '/enquiries/'
     | '/jobs/'
@@ -221,10 +242,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/workshop'
     | '/'
+    | '/bespoke/$ref'
     | '/clients/$id'
     | '/enquiries/$id'
     | '/invoices/$id'
     | '/jobs/$ref'
+    | '/bespoke'
     | '/clients'
     | '/enquiries'
     | '/jobs'
@@ -242,10 +265,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/workshop'
     | '/_authenticated/'
+    | '/_authenticated/bespoke/$ref'
     | '/_authenticated/clients/$id'
     | '/_authenticated/enquiries/$id'
     | '/_authenticated/invoices/$id'
     | '/_authenticated/jobs/$ref'
+    | '/_authenticated/bespoke/'
     | '/_authenticated/clients/'
     | '/_authenticated/enquiries/'
     | '/_authenticated/jobs/'
@@ -343,6 +368,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkshopRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/bespoke/': {
+      id: '/_authenticated/bespoke/'
+      path: '/bespoke'
+      fullPath: '/bespoke/'
+      preLoaderRoute: typeof AuthenticatedBespokeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bespoke/$ref': {
+      id: '/_authenticated/bespoke/$ref'
+      path: '/bespoke/$ref'
+      fullPath: '/bespoke/$ref'
+      preLoaderRoute: typeof AuthenticatedBespokeRefRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
@@ -421,9 +460,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWorkshopRoute: typeof AuthenticatedWorkshopRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedBespokeRefRoute: typeof AuthenticatedBespokeRefRoute
   AuthenticatedClientsIdRoute: typeof AuthenticatedClientsIdRoute
   AuthenticatedInvoicesIdRoute: typeof AuthenticatedInvoicesIdRoute
   AuthenticatedJobsRefRoute: typeof AuthenticatedJobsRefRoute
+  AuthenticatedBespokeIndexRoute: typeof AuthenticatedBespokeIndexRoute
   AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedJobsIndexRoute: typeof AuthenticatedJobsIndexRoute
 }
@@ -438,9 +479,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWorkshopRoute: AuthenticatedWorkshopRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedBespokeRefRoute: AuthenticatedBespokeRefRoute,
   AuthenticatedClientsIdRoute: AuthenticatedClientsIdRoute,
   AuthenticatedInvoicesIdRoute: AuthenticatedInvoicesIdRoute,
   AuthenticatedJobsRefRoute: AuthenticatedJobsRefRoute,
+  AuthenticatedBespokeIndexRoute: AuthenticatedBespokeIndexRoute,
   AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedJobsIndexRoute: AuthenticatedJobsIndexRoute,
 }
