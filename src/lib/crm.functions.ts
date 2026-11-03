@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { updateBespokeSchema } from "./bespoke-update-schema";
+import { saveBespokeProject, type BespokeUpdateDb } from "./bespoke-update";
 import {
   CLOSED_STATUSES,
   JOB_LOCATIONS,
@@ -304,6 +306,19 @@ export const createBespokeProject = createServerFn({ method: "POST" }).middlewar
     if (error) throw new Error(error.message);
 
     return { reference: project.project_reference };
+  });
+
+export const updateBespokeProject = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => updateBespokeSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    // Enable only after the target project's UPDATE grant, RLS policy, and
+    // updated_at trigger have been verified with an authenticated test user.
+    if (process.env["MARVELLOUS_BESPOKE_UPDATES_VERIFIED"] !== "true") {
+      throw new Error("Bespoke saving is awaiting database permission and updated-at verification.");
+    }
+
+    return saveBespokeProject(context.supabase as unknown as BespokeUpdateDb, data);
   });
 
 export const createJob = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])

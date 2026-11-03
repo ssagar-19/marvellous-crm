@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { createBespokeProject, searchClients } from "@/lib/crm.functions";
 import type { ClientDTO } from "@/lib/crm-domain";
+import { BespokeProgress, type BespokeStage } from "@/components/bespoke-progress";
 
 export const Route = createFileRoute("/_authenticated/new-bespoke")({
   head: () => ({
@@ -70,10 +71,9 @@ function NewJob() {
   const [matches, setMatches] = useState<ClientDTO[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [images, setImages] = useState<InspirationImage[]>([]);
-  const [status, setStatus] = useState("Enquiry");
+  const [status, setStatus] = useState<BespokeStage>("Enquiry");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [savedReference, setSavedReference] = useState<string | null>(null);
 
   const set = (key: keyof typeof empty) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -97,7 +97,7 @@ function NewJob() {
     }
   }
 
-  function useMatch(c: ClientDTO) {
+  function chooseMatch(c: ClientDTO) {
     setClientId(c.id);
     setForm((f) => ({
       ...f,
@@ -134,15 +134,54 @@ function NewJob() {
             </p>
           </div>
         </div>
-        <Link to="/jobs" className="glass flex h-11 items-center gap-2 rounded-xl px-4 text-sm">
-          <ArrowLeft className="size-4 text-gold" /> Back to Jobs
-        </Link>
+              <div className="flex items-center gap-3">
+          <div
+            className="glass flex h-11 items-center gap-2 rounded-xl px-4 text-sm text-gold"
+            title="Project reference assigned when saved"
+          >
+            <Barcode className="size-4" />
+            <span className="font-medium">BSP-*****</span>
+            <Lock className="size-3.5 text-muted-foreground" />
+          </div>
+        <button
+                type="button"
+                disabled={saving || saved}
+                onClick={async () => {
+                  setSaving(true);
+                  try {
+                    const result = await createBespokeProject({
+                      data: {
+                        clientId,
+                        ...form,
+                        status,
+                      },
+                    });
+                    setSaved(true);
+                    await queryClient.invalidateQueries({
+                      queryKey: ["bespoke-projects"],
+                    });
+                    await navigate({
+                      to: "/bespoke/$ref",
+                      params: { ref: result.reference },
+                    });
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                className="glass-gold flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm text-gold disabled:opacity-60"
+              >
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                {saving ? "Saving…" : "Save"}
+              </button>
+        </div>
       </div>
+
+      <BespokeProgress status={status} onChange={setStatus} />
 
       <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-5">
-          <Card title="Customer" icon={User}>
-            <div className="grid gap-4 md:grid-cols-3">
+          <section className="glass rounded-2xl p-4">
+            <div className="grid gap-3 md:grid-cols-3">
               {([
                 ["Name", "e.g. Sarah Hamilton", "fullName"],
                 ["Number", "e.g. 07700 900123", "phone"],
@@ -189,7 +228,7 @@ function NewJob() {
                     <button
                       key={c.id}
                       type="button"
-                      onClick={() => useMatch(c)}
+                      onClick={() => chooseMatch(c)}
                       className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-accent/40"
                     >
                       <User className="size-4 text-gold" />
@@ -204,48 +243,7 @@ function NewJob() {
                 )}
               </div>
             ) : null}
-          </Card>
-
-          <Card title="Bespoke Project" icon={Gem}>
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="block text-sm">
-                  <span className="mb-2 block text-muted-foreground">Project name</span>
-                  <input
-                    className={field}
-                    placeholder="e.g. Sarah's Emerald Ring"
-                    value={form.projectName}
-                    onChange={set("projectName")}
-                  />
-                </label>
-
-                <label className="block text-sm">
-                  <span className="mb-2 block text-muted-foreground">Piece type</span>
-                  <select className={field} value={form.pieceType} onChange={set("pieceType")}>
-                    <option value="">Select piece type</option>
-                    {["Ring", "Necklace", "Bracelet", "Earrings", "Pendant", "Other"].map((type) => (
-                      <option key={type}>{type}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <label className="block text-sm">
-                <span className="mb-2 block text-muted-foreground">Customer brief</span>
-                <textarea
-                  rows={5}
-                  maxLength={2000}
-                  className={area}
-                  value={form.brief}
-                  onChange={set("brief")}
-                  placeholder="Describe what the customer wants, the story behind the piece, preferences, requirements and initial ideas."
-                />
-                <span className="mt-1 block text-right text-xs text-muted-foreground">
-                  {form.brief.length}/2000
-                </span>
-              </label>
-            </div>
-          </Card>
+          </section>
 
           <Card title="Design & Inspiration" icon={ImageIcon}>
             <div className="rounded-2xl border border-dashed border-gold/40 bg-gold/5 p-8 text-center">
@@ -308,71 +306,9 @@ function NewJob() {
             ) : null}
           </Card>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <Card title="Research" icon={Search}>
-              <textarea
-                rows={8}
-                maxLength={3000}
-                className={area}
-                value={form.research}
-                onChange={set("research")}
-                placeholder="Materials, stones, references, suppliers, design research and ideas to explore..."
-              />
-              <span className="mt-1 block text-right text-xs text-muted-foreground">
-                {form.research.length}/3000
-              </span>
-            </Card>
 
-            <Card title="Notes" icon={MessageSquare}>
-              <textarea
-                rows={8}
-                maxLength={3000}
-                className={area}
-                value={form.notes}
-                onChange={set("notes")}
-                placeholder="Customer conversations, design decisions, internal notes and follow-ups..."
-              />
-              <span className="mt-1 block text-right text-xs text-muted-foreground">
-                {form.notes.length}/3000
-              </span>
-            </Card>
-          </div>
-        </div>
-
-        <div className="space-y-5">
-          <Card title="Project Status" icon={Zap}>
-            <div className="space-y-2">
-              {["Enquiry", "Research", "Design", "Approval", "Workshop", "Completed"].map((stage, index) => {
-                const active = status === stage;
-                const reached = ["Enquiry", "Research", "Design", "Approval", "Workshop", "Completed"].indexOf(status) >= index;
-
-                return (
-                  <button
-                    key={stage}
-                    type="button"
-                    onClick={() => setStatus(stage)}
-                    className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
-                      active
-                        ? "border-gold/50 bg-gold/10 text-gold"
-                        : reached
-                          ? "border-border bg-accent/20"
-                          : "border-border/60 bg-transparent text-muted-foreground"
-                    }`}
-                  >
-                    <span className={`grid size-7 place-items-center rounded-full border ${
-                      reached ? "border-gold/50 text-gold" : "border-border"
-                    }`}>
-                      {reached ? "✓" : index + 1}
-                    </span>
-                    <span className="text-sm font-medium">{stage}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
-
-          <Card title="Next Action" icon={FileText}>
-            <div className="space-y-4">
+          <section className="glass rounded-2xl p-4">
+            <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
               <label className="block text-sm">
                 <span className="mb-2 block text-muted-foreground">Action</span>
                 <input
@@ -393,59 +329,85 @@ function NewJob() {
                 />
               </label>
             </div>
-          </Card>
+          </section>
+        </div>
 
-          <Card title="Project Reference" icon={Barcode}>
-            <p className="-mt-2 mb-3 text-xs text-muted-foreground">
-              A permanent project reference will be added when this workflow is connected to Supabase.
-            </p>
-            <div className="flex items-center justify-center gap-3 rounded-xl border border-dashed border-gold/40 py-4 font-display text-2xl text-gold">
-              BSP-*****
-              <Lock className="size-4" />
+        <div className="flex flex-col">
+          <div className="flex-1 [&>section]:h-full">
+          <Card title="Bespoke Project" icon={Gem}>
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block text-sm">
+                  <span className="mb-2 block text-muted-foreground">Project name</span>
+                  <input
+                    className={field}
+                    placeholder="e.g. Sarah's Emerald Ring"
+                    value={form.projectName}
+                    onChange={set("projectName")}
+                  />
+                </label>
+
+                <label className="block text-sm">
+                  <span className="mb-2 block text-muted-foreground">Piece type</span>
+                  <select className={field} value={form.pieceType} onChange={set("pieceType")}>
+                    <option value="">Select piece type</option>
+                    {["Ring", "Necklace", "Bracelet", "Earrings", "Pendant", "Other"].map((type) => (
+                      <option key={type}>{type}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <label className="block text-sm">
+                <span className="mb-2 block text-muted-foreground">Customer brief</span>
+                <textarea
+                  rows={5}
+                  maxLength={2000}
+                  className={area}
+                  value={form.brief}
+                  onChange={set("brief")}
+                  placeholder="Describe what the customer wants, the story behind the piece, preferences, requirements and initial ideas."
+                />
+                <span className="mt-1 block text-right text-xs text-muted-foreground">
+                  {form.brief.length}/2000
+                </span>
+              </label>
+            </div>
+            <div className="mt-5 border-t border-border/50 pt-4">
+              <h3 className="mb-4 text-sm font-medium text-gold">Research & Notes</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block text-sm">
+                  <span className="mb-2 block text-muted-foreground">Research</span>
+              <textarea
+                rows={8}
+                maxLength={3000}
+                className={area}
+                value={form.research}
+                onChange={set("research")}
+                placeholder="Materials, stones, references, suppliers, design research and ideas to explore..."
+              />
+              <span className="mt-1 block text-right text-xs text-muted-foreground">
+                {form.research.length}/3000
+              </span>
+                </label>
+                <label className="block text-sm">
+                  <span className="mb-2 block text-muted-foreground">Notes</span>
+              <textarea
+                rows={8}
+                maxLength={3000}
+                className={area}
+                value={form.notes}
+                onChange={set("notes")}
+                placeholder="Customer conversations, design decisions, internal notes and follow-ups..."
+              />
+              <span className="mt-1 block text-right text-xs text-muted-foreground">
+                {form.notes.length}/3000
+              </span>
+                </label>
+              </div>
             </div>
           </Card>
-
-          <Card title="Save Project" icon={CheckCircle2}>
-            <div className="space-y-3">
-              <button
-                type="button"
-                disabled={saving || saved}
-                onClick={async () => {
-                  setSaving(true);
-                  try {
-                    const result = await createBespokeProject({
-                      data: {
-                        clientId,
-                        ...form,
-                        status,
-                      },
-                    });
-                    setSaved(true);
-                    setSavedReference(result.reference);
-                    await queryClient.invalidateQueries({
-                      queryKey: ["bespoke-projects"],
-                    });
-                    await navigate({
-                      to: "/bespoke/$ref",
-                      params: { ref: result.reference },
-                    });
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-                className="glass-gold flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm text-gold disabled:opacity-60"
-              >
-                {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-                {saving ? "Saving…" : "Save Bespoke Project"}
-              </button>
-
-              {saved ? (
-                <div className="rounded-xl border border-gold/30 bg-gold/10 p-3 text-center text-sm text-gold">
-                  Project saved as {savedReference}.
-                </div>
-              ) : null}
-            </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>
