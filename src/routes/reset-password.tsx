@@ -37,6 +37,10 @@ function ResetPassword() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
+  const [factorId, setFactorId] = useState("");
+  const [challengeId, setChallengeId] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -59,15 +63,86 @@ function ResetPassword() {
     };
   }, []);
 
+  async function prepareMfa() {
+    const { data: assurance, error: assuranceError } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (assuranceError) throw assuranceError;
+    if (assurance.currentLevel === "aal2") return true;
+
+    const { data: factors, error: factorsError } =
+      await supabase.auth.mfa.listFactors();
+
+    if (factorsError) throw factorsError;
+
+    const factor = factors.all.find(
+      (item) => item.factor_type === "totp" && item.status === "verified",
+    );
+
+    if (!factor) {
+      throw new Error("No verified authenticator found. Contact your administrator.");
+    }
+
+    const { data: challenge, error: challengeError } =
+      await supabase.auth.mfa.challenge({ factorId: factor.id });
+
+    if (challengeError) throw challengeError;
+
+    setFactorId(factor.id);
+    setChallengeId(challenge.id);
+    setMfaRequired(true);
+    return false;
+  }
+
+  async function verifyMfa(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+
+    try {
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId,
+        code: mfaCode.trim(),
+      });
+
+      if (verifyError) throw verifyError;
+
+      const { data: assurance } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+      if (assurance?.currentLevel !== "aal2") {
+        throw new Error("MFA verification was not completed.");
+      }
+
+      setMfaRequired(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verification failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     if (password.length < 8) return setError("Password must be at least 8 characters.");
     if (password !== confirm) return setError("Those passwords do not match.");
     setBusy(true);
-    const { error: err } = await supabase.auth.updateUser({ password });
+    try {
+      const verified = await prepareMfa();
+      if (!verified) {
+        setBusy(false);
+        return;
+      }
+
+      const { error: err } = await supabase.auth.updateUser({ password });
+      if (err) throw err;
+    } catch (err) {
+      setBusy(false);
+      return setError(err instanceof Error ? err.message : "Password update failed.");
+    }
     setBusy(false);
-    if (err) return setError(err.message);
     setDone(true);
     setTimeout(() => navigate({ to: "/", replace: true }), 1200);
   }
@@ -102,6 +177,26 @@ function ResetPassword() {
             <p className="mt-6 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm">
               Password updated. Taking you into the CRM…
             </p>
+          ) : mfaRequired ? (
+            <form className="mt-6 space-y-4" onSubmit={verifyMfa}>
+              <p className="text-sm text-muted-foreground">
+                Enter the six-digit code from your authenticator app.
+              </p>
+              <input
+                className={field}
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="Authentication code"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                required
+              />
+              {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+              <button type="submit" disabled={busy} className="btn-gold w-full">
+                {busy ? "Verifying..." : "Verify Identity"}
+              </button>
+            </form>
           ) : (
             <form className="mt-6 space-y-4" onSubmit={onSubmit} noValidate>
               <label className="block text-sm">
